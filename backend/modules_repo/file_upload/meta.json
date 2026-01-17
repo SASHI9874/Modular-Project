@@ -1,0 +1,22 @@
+{
+  "id": "file_upload",
+  "name": "Local File Uploader",
+  "description": "Upload a file to local storage",
+  "category": "Input",
+  "inputs": [
+    {
+      "name": "file_path",
+      "type": "file_upload",
+      "description": "File input",
+      "optional": false
+    }
+  ],
+  "outputs": [
+    {
+      "name": "file_path",
+      "type": "string",
+      "description": "Path to saved file"
+    }
+  ],
+  "class_name": "FileUploader"
+}

@@ -1,0 +1,12 @@
+{
+    "id": "embedding",
+    "name": "Text Embedder",
+    "class_name": "EmbeddingGenerator",
+    "inputs": [
+        {"name": "text", "type": "string", "label": "Text to Embed"},
+        {"name": "model_name", "type": "string", "label": "Model Name (Optional)"}
+    ],
+    "outputs": [
+        {"name": "vector", "type": "list"}
+    ]
+}

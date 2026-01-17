@@ -1,0 +1,19 @@
+{
+    "id": "file_reader",
+    "name": "Text File Reader",
+    "description": "Reads contents from a local .txt file",
+    "class_name": "FileReader",
+    "inputs": [
+        {
+            "name": "file_path",
+            "type": "file_upload",
+            "label": "Upload Text File"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "file_content",
+            "type": "string"
+        }
+    ]
+}

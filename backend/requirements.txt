@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+build
+python-multipart
+networkx
+python-dotenv

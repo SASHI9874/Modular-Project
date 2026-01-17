@@ -1,0 +1,19 @@
+{
+    "id": "text_extraction",
+    "name": "Markdown Doc Extractor",
+    "description": "Extracts clean Markdown from PDF, DOCX, Excel, and CSV.",
+    "class_name": "TextExtractor",
+    "inputs": [
+        {
+            "name": "file_path",
+            "type": "string",
+            "label": "File Path"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "markdown_text",
+            "type": "string"
+        }
+    ]
+}

@@ -1,0 +1,26 @@
+{
+    "id": "llm_call",
+    "name": "LLM Processor",
+    "description": "Configurable wrapper for OpenAI GPT models with System Context.",
+    "class_name": "LLMClient",
+    "env_vars": ["OPENAI_API_KEY", "OPENAI_MODEL"],
+    "inputs": [
+        {
+            "name": "prompt",
+            "type": "string",
+            "label": "User Query"
+        },
+        {
+            "name": "system_context",
+            "type": "string",
+            "label": "System Context / Persona",
+            "default": "You are a helpful AI assistant."
+        }
+    ],
+    "outputs": [
+        {
+            "name": "response",
+            "type": "string"
+        }
+    ]
+}

@@ -1,0 +1,19 @@
+{
+    "id": "sentiment_analysis",
+    "name": "Sentiment Analyzer",
+    "description": "Determines if text is positive or negative",
+    "class_name": "SentimentAnalyzer",
+    "inputs": [
+        {
+            "name": "text",
+            "type": "string",
+            "label": "Input Text"
+        }
+    ],
+    "outputs": [
+        {
+            "name": "sentiment_score",
+            "type": "object"
+        }
+    ]
+}

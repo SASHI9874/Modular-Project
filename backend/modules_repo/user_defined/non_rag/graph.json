@@ -1,0 +1,109 @@
+{
+  "nodes": [
+    {
+      "id": "file_upload_0",
+      "type": "featureNode",
+      "position": {
+        "x": 236,
+        "y": 239
+      },
+      "data": {
+        "label": "Local File Uploader",
+        "feature_id": "file_upload",
+        "inputs": [
+          {
+            "name": "file_path",
+            "type": "file_upload",
+            "description": "File input",
+            "optional": false
+          }
+        ],
+        "outputs": [
+          {
+            "name": "file_path",
+            "type": "string",
+            "description": "Path to saved file"
+          }
+        ]
+      },
+      "width": 200,
+      "height": 99
+    },
+    {
+      "id": "text_extraction_1",
+      "type": "featureNode",
+      "position": {
+        "x": 492,
+        "y": 303
+      },
+      "data": {
+        "label": "Markdown Doc Extractor",
+        "feature_id": "text_extraction",
+        "inputs": [
+          {
+            "name": "file_path",
+            "type": "string",
+            "label": "File Path"
+          }
+        ],
+        "outputs": [
+          {
+            "name": "markdown_text",
+            "type": "string"
+          }
+        ]
+      },
+      "width": 208,
+      "height": 99
+    },
+    {
+      "id": "llm_call_2",
+      "type": "featureNode",
+      "position": {
+        "x": 799,
+        "y": 199
+      },
+      "data": {
+        "label": "LLM Processor",
+        "feature_id": "llm_call",
+        "inputs": [
+          {
+            "name": "prompt",
+            "type": "string",
+            "label": "User Query"
+          },
+          {
+            "name": "system_context",
+            "type": "string",
+            "label": "System Context / Persona",
+            "default": "You are a helpful AI assistant."
+          }
+        ],
+        "outputs": [
+          {
+            "name": "response",
+            "type": "string"
+          }
+        ]
+      },
+      "width": 211,
+      "height": 131
+    }
+  ],
+  "edges": [
+    {
+      "source": "file_upload_0",
+      "sourceHandle": "file_path",
+      "target": "text_extraction_1",
+      "targetHandle": "file_path",
+      "id": "reactflow__edge-file_upload_0file_path-text_extraction_1file_path"
+    },
+    {
+      "source": "text_extraction_1",
+      "sourceHandle": "markdown_text",
+      "target": "llm_call_2",
+      "targetHandle": "system_context",
+      "id": "reactflow__edge-text_extraction_1markdown_text-llm_call_2system_context"
+    }
+  ]
+}

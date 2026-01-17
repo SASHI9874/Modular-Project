@@ -1,0 +1,35 @@
+{
+  "id": "user_defined.non_rag",
+  "name": "Non-Rag",
+  "description": "User created module",
+  "category": "Custom",
+  "inputs": [
+    {
+      "name": "local_file_uploader_file_path",
+      "type": "file_upload",
+      "internal_node": "file_upload_0",
+      "internal_input": "file_path"
+    },
+    {
+      "name": "llm_processor_prompt",
+      "type": "string",
+      "internal_node": "llm_call_2",
+      "internal_input": "prompt"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "local_file_uploader_file_path",
+      "type": "string"
+    },
+    {
+      "name": "markdown_doc_extractor_markdown_text",
+      "type": "string"
+    },
+    {
+      "name": "llm_processor_response",
+      "type": "string"
+    }
+  ],
+  "class_name": "WrapperModule"
+}
