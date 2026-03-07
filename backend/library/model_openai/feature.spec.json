@@ -1,0 +1,55 @@
+{
+    "key": "model_openai",
+    "name": "OpenAI Model",
+    "version": "1.0.0",
+    "icon": "sparkles",
+    "description": "Provides OpenAI language model capabilities",
+    "classification": {
+        "capability": "processor",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "color": "#3b82f6",
+        "category": "AI Models"
+    },
+    "contract": {
+        "inputs": {},
+        "outputs": {
+            "model": {
+                "type": "object",
+                "description": "The LLM callable"
+            }
+        }
+    },
+    "config": {
+        "api_key": {
+            "type": "password",
+            "label": "OpenAI API Key",
+            "description": "Leave blank to use environment variable"
+        },
+        "model_name": {
+            "type": "select",
+            "label": "Model Name",
+            "options": [
+                "gpt-4o",
+                "gpt-4-turbo",
+                "gpt-3.5-turbo"
+            ],
+            "default": "gpt-4o"
+        },
+        "temperature": {
+            "type": "number",
+            "label": "Temperature",
+            "default": 0.7,
+            "min": 0,
+            "max": 2
+        }
+    },
+    "paths": {
+        "runtime": "runtime/adapter.py",
+        "core": "core/service.py",
+        "generator_backend": "generators/backend.py",
+        "generator_frontend": "generators/frontend.ts"
+    }
+}

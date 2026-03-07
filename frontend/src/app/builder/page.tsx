@@ -3,32 +3,33 @@ import React, { useRef, useCallback, useState } from "react";
 import ReactFlow, { ReactFlowProvider, useReactFlow } from "reactflow";
 import FlowCanvas from "@/components/features/canvas/FlowCanvas";
 import Sidebar from "@/components/features/sidebar/Sidebar";
+import RunWorkflowModal from "@/app/builder/RunWorkflowModal";
 import { useBuilderStore } from "@/core/store/useBuilderStore";
+import ExecutionResultsPanel from "@/components/features/canvas/ExecutionResultsPanel";
 import { apiClient } from "@/core/api/client";
 import { Play, Loader2, X, Code, Download } from "lucide-react";
 
-// We need to wrap the logic in a component that has access to ReactFlow context
 function BuilderContent() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const { project, toObject } = useReactFlow();
+  const { project, toObject, getNodes } = useReactFlow();
   const { addNode, setExecutionResults, executionResults } = useBuilderStore();
-  const [isRunning, setIsRunning] = useState(false); // Loading state
+
+  const [isRunning, setIsRunning] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [compiledCode, setCompiledCode] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Modal State
+  const [showRunModal, setShowRunModal] = useState(false);
+
   const handleSave = async () => {
     try {
-      // 1. Extract the current graph state
       const graphData = toObject();
-
-      // 2. Send to Backend
       const response = await apiClient.post("/projects/", {
-        name: `Project ${new Date().toLocaleString()}`, // Auto-name for now
+        name: `Project ${new Date().toLocaleString()}`,
         graph: graphData,
       });
-
-      alert(`Saved! Project ID: ${response.data.id}`);
+      console.log(`Saved! Project ID: ${response.data.id}`);
       return response.data.id;
     } catch (e) {
       console.error(e);
@@ -37,20 +38,30 @@ function BuilderContent() {
     }
   };
 
-  const handleRun = async () => {
+  // UPDATED: handleRun now accepts the dynamic payload from the modal
+  const handleRun = async (runConfig: {
+    entry_node_id?: string;
+    payload: Record<string, any>;
+  }) => {
     setIsRunning(true);
+    setShowRunModal(false); // Close the modal
+    setShowCode(false); // Close code preview if it was open
     setExecutionResults(null); // Clear previous results
 
-    // 1. Auto-save first (so backend has latest version)
+    // Auto-save first
     const projectId = await handleSave();
 
     if (projectId) {
       try {
-        // 2. Trigger Run
-        const { data } = await apiClient.post(`/projects/${projectId}/run`);
-        setExecutionResults(data.results);
+        // Pass the highly specific trigger ID and payload to the backend
+        const { data } = await apiClient.post(`/projects/${projectId}/run`, {
+          entry_node_id: runConfig.entry_node_id,
+          inputs: runConfig.payload,
+        });
+        setExecutionResults(data);
       } catch (e) {
-        alert("Run failed");
+        console.error(e);
+        alert("Run failed. Check backend logs.");
       }
     }
     setIsRunning(false);
@@ -60,6 +71,7 @@ function BuilderContent() {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
+
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -68,7 +80,9 @@ function BuilderContent() {
       const configStr = event.dataTransfer.getData(
         "application/reactflow/config",
       );
+
       if (!type || !configStr) return;
+
       const config = JSON.parse(configStr);
       const position = project({
         x:
@@ -78,6 +92,7 @@ function BuilderContent() {
           event.clientY -
           (reactFlowWrapper.current?.getBoundingClientRect().top || 0),
       });
+
       addNode({
         id: `${type}-${Date.now()}`,
         type,
@@ -91,35 +106,35 @@ function BuilderContent() {
   const handleCompile = async () => {
     const projectId = await handleSave();
     if (projectId) {
-      const { data } = await apiClient.get(`/projects/${projectId}/compile`);
-      setCompiledCode(data);
-      setShowCode(true);
+      try {
+        const { data } = await apiClient.get(`/projects/${projectId}/compile`);
+        setCompiledCode(data);
+        setShowCode(true);
+      } catch (e) {
+        console.error("Compilation failed", e);
+        alert("Failed to compile code.");
+      }
     }
   };
 
   const handleDownload = async () => {
     setIsDownloading(true);
-    const projectId = await handleSave(); // Auto-save first
+    const projectId = await handleSave();
     if (!projectId) {
       setIsDownloading(false);
       return;
     }
 
     try {
-      // Request the file as a 'blob' (binary large object)
       const response = await apiClient.get(`/projects/${projectId}/download`, {
         responseType: "blob",
       });
-
-      // Create a hidden link to trigger the browser download
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", `ai-app-${projectId}.zip`);
       document.body.appendChild(link);
       link.click();
-
-      // Cleanup
       link.parentNode?.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (e) {
@@ -136,17 +151,18 @@ function BuilderContent() {
       <header className="h-14 border-b flex items-center px-4 bg-gray-200 z-10 shrink-0">
         <h1 className="font-bold text-lg text-gray-900">AI Builder</h1>
         <div className="ml-auto flex gap-2">
-          {/* Attach onClick handler */}
           <button
             type="button"
             onClick={handleSave}
-            className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800"
+            className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors"
           >
             Save Flow
           </button>
+
+          {/* Main Run Button opens the Modal */}
           <button
             type="button"
-            onClick={handleRun}
+            onClick={() => setShowRunModal(true)}
             disabled={isRunning}
             className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 transition-colors"
           >
@@ -157,10 +173,11 @@ function BuilderContent() {
             )}
             Run Flow
           </button>
+
           <button
             type="button"
             onClick={handleCompile}
-            className="text-gray-600 px-4 py-2 rounded border-1 text-sm hover:bg-gray-100 font-medium flex items-center gap-2"
+            className="text-gray-600 px-4 py-2 rounded border border-gray-300 text-sm hover:bg-gray-100 font-medium flex items-center gap-2 transition-colors"
           >
             <Code className="w-4 h-4" />
             View Code
@@ -168,7 +185,7 @@ function BuilderContent() {
           <button
             onClick={handleDownload}
             disabled={isDownloading}
-            className="text-gray-600 px-4 py-2 rounded text-sm hover:bg-gray-100 font-medium flex items-center gap-2 disabled:opacity-50"
+            className="text-gray-600 px-4 py-2 rounded border border-gray-300 text-sm hover:bg-gray-100 font-medium flex items-center gap-2 disabled:opacity-50 transition-colors"
           >
             {isDownloading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -182,15 +199,11 @@ function BuilderContent() {
 
       {/* Main Workspace */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
         <Sidebar />
-
-        {/* Canvas Area */}
         <div
           className="flex-1 h-full relative bg-gray-100"
           ref={reactFlowWrapper}
         >
-          {/* We pass drop handlers to the container DIV, not the Canvas component itself */}
           <div
             className="h-full w-full"
             onDragOver={onDragOver}
@@ -200,22 +213,21 @@ function BuilderContent() {
           </div>
         </div>
       </div>
-      {/* RESULTS PANEL (Floating) */}
-      {executionResults && (
-        <div className="absolute bottom-4 right-4 w-96 bg-white border rounded-xl shadow-2xl z-50 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5">
-          <div className="bg-gray-100 px-4 py-2 border-b flex justify-between items-center">
-            <span className="font-bold text-sm text-gray-700">
-              Execution Results
-            </span>
-            <button onClick={() => setExecutionResults(null)}>
-              <X className="w-4 h-4 text-gray-500 hover:text-black" />
-            </button>
-          </div>
-          <div className="p-4 max-h-96 overflow-y-auto bg-slate-900 text-slate-50 font-mono text-xs">
-            <pre>{JSON.stringify(executionResults, null, 2)}</pre>
-          </div>
-        </div>
-      )}
+
+      {/* NEW DYNAMIC RUN MODAL */}
+      <RunWorkflowModal
+        isOpen={showRunModal}
+        onClose={() => setShowRunModal(false)}
+        onRun={handleRun}
+        nodes={getNodes()} // Pass canvas nodes so the modal can introspect triggers
+      />
+
+      {/* RESULTS PANEL */}
+      <ExecutionResultsPanel
+        results={executionResults}
+        onClose={() => setExecutionResults(null)}
+      />
+
       {/* CODE PREVIEW MODAL */}
       {showCode && (
         <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
@@ -224,19 +236,20 @@ function BuilderContent() {
               <span className="font-bold text-gray-700">
                 Generated Python Code
               </span>
-              <button onClick={() => setShowCode(false)}>
-                <X className="w-5 h-5 text-gray-500 hover:text-red-500" />
-              </button>
 
-              <button
-                onClick={() => {
-                  /* handleRun logic */
-                }}
-                className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2"
-              >
-                <Play className="w-4 h-4 fill-current" />
-                Run Flow
-              </button>
+              <div className="flex gap-4 items-center">
+                {/* This button also opens the Run Modal! */}
+                <button
+                  onClick={() => setShowRunModal(true)}
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                >
+                  <Play className="w-4 h-4 fill-current" />
+                  Run Flow
+                </button>
+                <button onClick={() => setShowCode(false)}>
+                  <X className="w-5 h-5 text-gray-500 hover:text-red-500 transition-colors" />
+                </button>
+              </div>
             </div>
             <div className="flex-1 overflow-auto bg-[#1e1e1e] p-4">
               <pre className="text-sm font-mono text-green-400">
@@ -250,7 +263,6 @@ function BuilderContent() {
   );
 }
 
-// Wrap everything in ReactFlowProvider so 'useReactFlow' works
 export default function BuilderPage() {
   return (
     <ReactFlowProvider>

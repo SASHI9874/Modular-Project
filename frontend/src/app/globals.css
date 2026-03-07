@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+/* 1. Force a black arrow on the empty canvas */
+.react-flow__pane {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="black" stroke="black" stroke-width="1.5"><polygon points="4,2 18,11 11,13 14,21 11,22 8,14 2,16" /></svg>') 4 2, auto !important;
+}
+
+/* Optional: Keep the grab hand when they are actually dragging the canvas, 
+   but invert the color so it stays dark */
+/* .react-flow__pane.dragging {
+  cursor: grabbing !important;
+  filter: invert(1); 
+} */

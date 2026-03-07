@@ -35,7 +35,7 @@ class AgentOrchestrator:
         for iteration in range(self.max_iterations):
             print(f"🔄 [Agent] Iteration {iteration + 1}/{self.max_iterations}")
             
-            # Get LLM response
+            # 1. Get LLM response
             try:
                 response = self.llm_callable(conversation)
                 response_text = response.get("content", "")
@@ -50,11 +50,22 @@ class AgentOrchestrator:
             
             print(f"💭 [Agent] Response: {response_text[:100]}...")
             
-            # Check for tool call
+            # --- THE FIX: ALWAYS CHECK FOR THE FINAL ANSWER FIRST ---
+            final_answer = self._parse_final_answer(response_text)
+            
+            if final_answer:
+                print(f"✅ [Agent]  {final_answer[:50]}...")
+                return {
+                    "response": final_answer,
+                    "tool_calls_made": tool_calls_made,
+                    "iterations_used": iteration + 1,
+                    "success": True
+                }
+
+            # --- IF NO ANSWER, CHECK FOR A TOOL CALL ---
             tool_call = self._parse_tool_call(response_text)
             
             if tool_call:
-                # Execute tool
                 tool_name = tool_call['tool']
                 tool_args = tool_call['args']
                 
@@ -67,36 +78,27 @@ class AgentOrchestrator:
                     "result": tool_result
                 })
                 
-                # Add to conversation
+                # Add the LLM's reasoning and the tool's result to the conversation
                 conversation.append({"role": "assistant", "content": response_text})
                 conversation.append({
                     "role": "user",
                     "content": build_tool_result_message(tool_name, tool_result)
                 })
                 
+                # Loop back to let the LLM analyze the tool result
                 continue
             
-            # Check for final answer
-            final_answer = self._parse_final_answer(response_text)
-            
-            if final_answer:
-                print(f"✅ [Agent] Final answer: {final_answer[:50]}...")
-                return {
-                    "response": final_answer,
-                    "tool_calls_made": tool_calls_made,
-                    "iterations_used": iteration + 1,
-                    "success": True
-                }
-            
-            # No tool call or answer - add to conversation and continue
+            # --- IF NEITHER, THE LLM IS CONFUSED ---
+            # No tool call or answer found - nudge the LLM to follow the format
+            print("⚠️  [Agent] No valid tool call or final answer found in response.")
             conversation.append({"role": "assistant", "content": response_text})
             conversation.append({
                 "role": "user", 
-                "content": "Please provide either a tool call or final answer."
+                "content": "Please follow the format. Provide either a 'TOOL: [name]' block or an 'ANSWER: [response]' block."
             })
         
-        # Max iterations reached
-        print(f"⚠️  [Agent] Max iterations reached")
+        # Max iterations reached without a final answer
+        print(f"🛑 [Agent] Max iterations reached")
         return {
             "response": "I apologize, but I couldn't complete this task within the iteration limit.",
             "tool_calls_made": tool_calls_made,

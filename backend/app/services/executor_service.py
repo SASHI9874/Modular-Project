@@ -28,26 +28,34 @@ class GraphExecutor:
         return list(nx.topological_sort(G))
 
     def get_connected_tools(self, agent_node_id: str) -> List[Dict]:
-        """Get tools connected to an agent via tool edges"""
+        """Get tools connected to an agent via the 'tools' or 'tool' handle"""
+        # Look for edges where the TARGET is the Agent, and the handle is 'tools'
         tool_edges = [
             e for e in self.edges 
-            if e['source'] == agent_node_id and e.get('type') == 'tool'
+            if e['target'] == agent_node_id 
+            and e.get('targetHandle') in ['tool', 'tools']
         ]
         
         tools = []
         for edge in tool_edges:
-            tool_node_id = edge['target']
+            # The Tool is the source of the edge
+            tool_node_id = edge['source']
             tool_node = self.nodes.get(tool_node_id)
             
             if tool_node:
                 feature_key = tool_node['data'].get('icon')
                 feature = library_service.get_feature(feature_key)
                 
-                if feature and feature.tool_definition:
-                    tool_def = feature.tool_definition.dict()
+                # Verify the feature actually has a tool schema defined
+                if feature and hasattr(feature, 'tool_definition') and feature.tool_definition:
+                    # Handle both Pydantic models and standard dicts just in case
+                    tool_def = feature.tool_definition.dict() if hasattr(feature.tool_definition, 'dict') else feature.tool_definition
+                    
                     tool_def['node_id'] = tool_node_id
                     tool_def['feature_key'] = feature_key
                     tools.append(tool_def)
+                else:
+                    print(f"⚠️ [Executor] Node '{feature_key}' is connected as a tool, but has no tool_definition in its spec!")
         
         return tools
 
@@ -85,12 +93,11 @@ class GraphExecutor:
             }
 
     def get_connected_llm(self, agent_node_id: str):
-        """Get LLM connected to agent via 'llm' handle"""
-        # Find edge where target is agent and targetHandle is 'llm'
+        """Get LLM connected to agent via 'llm' or 'model' handle"""
         llm_edges = [
             e for e in self.edges 
             if e['target'] == agent_node_id 
-            and e.get('targetHandle') == 'llm'
+            and e.get('targetHandle') in ['llm', 'model']
         ]
         
         if llm_edges:
@@ -112,16 +119,9 @@ class GraphExecutor:
             feature_key = llm_node['data'].get('icon')
             adapter_module = library_service.import_runtime_adapter(feature_key)
             
-            # Extract last message as prompt
-            prompt = messages[-1]['content'] if messages else ""
-            
-            # Build context from previous messages
-            context_messages = messages[:-1] if len(messages) > 1 else []
-            context_str = "\n".join([f"{m['role']}: {m['content']}" for m in context_messages])
-            
+            # Pass the ReAct messages natively!
             inputs = {
-                "prompt": prompt,
-                "context": context_str
+                "messages": messages
             }
             
             context = {
@@ -137,7 +137,7 @@ class GraphExecutor:
             }
         
         return llm_call
-
+    
     def execute_node(self, node_id: str):
         node = self.nodes[node_id]
         feature_key = node['data'].get('icon')
@@ -215,9 +215,41 @@ class GraphExecutor:
         self.execution_state[node_id] = output
         return output
 
-    def run(self):
+    def run(self, entry_node_id: str = None, initial_inputs: Dict[str, Any] = None):
+        """
+        Executes the graph in topological order. 
+        If an entry node and initial inputs are provided, it seeds the execution state.
+        """
         execution_order = self.build_dag()
         results = {}
+        
+        # Seed the Graph Memory
+        if entry_node_id and initial_inputs:
+            print(f"🌱 [Executor] Seeding '{entry_node_id}' with payload: {initial_inputs}")
+            self.execution_state[entry_node_id] = initial_inputs
+            results[entry_node_id] = initial_inputs
+            
+            if entry_node_id in execution_order:
+                execution_order.remove(entry_node_id)
+
+        # Identify Subordinate Nodes (Tools and Models)
+        # We find any node that is acting as a tool or model input for an agent.
+        subordinate_nodes = set()
+        for edge in self.edges:
+            target_handle = edge.get('targetHandle', '')
+            edge_type = edge.get('type', '')
+            
+            # If the edge plugs into a tool or model port, the source node is a subordinate!
+            if target_handle in ['llm', 'model', 'tools', 'tool'] or edge_type == 'tool':
+                subordinate_nodes.add(edge['source'])
+
+        # Execute the rest of the nodes
         for node_id in execution_order:
+            # SKIP subordinate nodes! Let the Agent orchestrate them.
+            if node_id in subordinate_nodes:
+                print(f"⏭️  [Executor] Skipping '{node_id}' (Orchestrated by Agent)")
+                continue
+                
             results[node_id] = self.execute_node(node_id)
+            
         return results

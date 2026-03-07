@@ -8,7 +8,7 @@ import {
   Sparkles,
   Database,
   Wrench,
-  X,
+  MessageSquare,
 } from "lucide-react";
 
 interface AgentNodeProps {
@@ -25,147 +25,178 @@ interface AgentNodeProps {
 export default function AgentNode({ data, selected }: AgentNodeProps) {
   const [expanded, setExpanded] = useState(true);
 
+  // Increased size slightly and pushed further out from the border
+  const handleSize = 12;
+  const leftOffset = "2px";
+
+  const toolCount = data.connectedTools?.length || 0;
+  const isMemoryConnected = !!data.connectedMemory;
+  const isModelConnected = !!data.connectedModel;
+
+  const rowBaseClass =
+    "relative flex items-center pl-6 pr-4 py-2 hover:bg-gray-50 transition-colors cursor-default";
+
   return (
     <div
       className={`
-        bg-white rounded-lg shadow-lg border-2 min-w-[280px]
-        ${selected ? "border-amber-500 ring-2 ring-amber-200" : "border-amber-300"}
+        relative bg-white rounded-xl shadow-lg border-2 w-[280px] transition-all
+        ${selected ? "border-amber-500 ring-4 ring-amber-500/20" : "border-gray-200"}
       `}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-3 rounded-t-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-white">
-            <Brain className="w-5 h-5" />
-            <span className="font-bold">{data.label || "AI Agent"}</span>
-          </div>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="text-white hover:bg-white/20 rounded p-1"
-          >
-            {expanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
+      <div className="bg-amber-500 h-10 px-4 flex items-center justify-between text-white rounded-t-lg">
+        <div className="flex items-center gap-2">
+          <Brain className="w-4 h-4" />
+          <span className="font-semibold text-sm tracking-wide">
+            {data.label || "ReAct Agent"}
+          </span>
         </div>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-white hover:bg-white/20 rounded p-1 transition-colors"
+        >
+          {expanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
+        </button>
       </div>
 
-      {/* Body */}
       {expanded && (
-        <div className="p-4 space-y-3">
-          {/* Chat Model Connection */}
-          <div className="relative">
+        <div className="relative flex flex-col bg-white py-1 rounded-b-lg">
+          {/* Message Row */}
+          <div
+            className={`${rowBaseClass} border-b border-gray-100 pb-2.5 mb-1`}
+          >
+            {/* Forced inline color to bypass React Flow's gray override */}
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="message"
+              className="border-2 border-white"
+              style={{
+                backgroundColor: "#64748b",
+                width: handleSize,
+                height: handleSize,
+                left: leftOffset,
+              }}
+            />
+            <div className="flex items-center gap-3 w-full">
+              <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-gray-800">
+                  Message
+                </span>
+                <span className="text-[11px] text-gray-400">Trigger input</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Chat Model Row */}
+          <div className={rowBaseClass}>
             <Handle
               type="target"
               position={Position.Left}
               id="model"
+              className="border-2 border-white"
               style={{
-                left: -8,
-                top: 20,
-                background: "#3b82f6",
-                width: 12,
-                height: 12,
+                backgroundColor: "#3b82f6",
+                width: handleSize,
+                height: handleSize,
+                left: leftOffset,
               }}
             />
-            <div className="flex items-center gap-2 text-sm">
-              <Sparkles className="w-4 h-4 text-blue-600" />
-              <span className="font-medium text-gray-700">Chat Model*</span>
+            <div className="flex items-center gap-3 w-full">
+              <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-gray-800">
+                  Chat Model*
+                </span>
+                <span
+                  className={`text-[11px] ${isModelConnected ? "text-blue-600 font-medium" : "text-gray-400"}`}
+                >
+                  {isModelConnected ? data.connectedModel : "Connect LLM node"}
+                </span>
+              </div>
             </div>
-            {data.connectedModel ? (
-              <div className="ml-6 mt-1 text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                {data.connectedModel}
-              </div>
-            ) : (
-              <div className="ml-6 mt-1 text-xs text-gray-400">
-                Connect LLM node
-              </div>
-            )}
           </div>
 
-          <div className="border-t border-gray-200" />
-
-          {/* Memory Connection */}
-          <div className="relative">
+          {/* Memory Row */}
+          <div
+            className={`${rowBaseClass} ${isMemoryConnected ? "opacity-100" : "opacity-60"}`}
+          >
             <Handle
               type="target"
               position={Position.Left}
               id="memory"
+              className="border-2 border-white"
               style={{
-                left: -8,
-                top: 85,
-                background: "#10b981",
-                width: 12,
-                height: 12,
+                backgroundColor: "#22c55e",
+                width: handleSize,
+                height: handleSize,
+                left: leftOffset,
               }}
             />
-            <div className="flex items-center gap-2 text-sm">
-              <Database className="w-4 h-4 text-green-600" />
-              <span className="font-medium text-gray-700">Memory</span>
-            </div>
-            {data.connectedMemory ? (
-              <div className="ml-6 mt-1 text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
-                {data.connectedMemory}
+            <div className="flex items-center gap-3 w-full">
+              <Database className="w-3.5 h-3.5 text-green-500" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-gray-800">
+                  Memory
+                </span>
+                <span
+                  className={`text-[11px] ${isMemoryConnected ? "text-green-600 font-medium" : "text-gray-400"}`}
+                >
+                  {isMemoryConnected ? data.connectedMemory : "Optional"}
+                </span>
               </div>
-            ) : (
-              <div className="ml-6 mt-1 text-xs text-gray-400">Optional</div>
-            )}
+            </div>
           </div>
 
-          <div className="border-t border-gray-200" />
-
-          {/* Tools Section */}
-          <div className="relative">
-            <div className="flex items-center gap-2 text-sm mb-2">
-              <Wrench className="w-4 h-4 text-purple-600" />
-              <span className="font-medium text-gray-700">Tools</span>
+          {/* Tools Row */}
+          <div className={rowBaseClass}>
+            <Handle
+              type="target"
+              position={Position.Left}
+              id="tools"
+              className="border-2 border-white"
+              style={{
+                backgroundColor: "#a855f7",
+                width: handleSize,
+                height: handleSize,
+                left: leftOffset,
+              }}
+            />
+            <div className="flex items-center gap-3 w-full">
+              <Wrench className="w-3.5 h-3.5 text-purple-500" />
+              <div className="flex flex-col">
+                <span className="text-[13px] font-medium text-gray-800">
+                  Tools {toolCount > 0 && `(${toolCount})`}
+                </span>
+                <span
+                  className={`text-[11px] ${toolCount > 0 ? "text-purple-600 font-medium" : "text-gray-400"}`}
+                >
+                  {toolCount > 0 ? "Tools connected" : "Connect tool nodes"}
+                </span>
+              </div>
             </div>
-
-            {/* Tool Slots */}
-            {[1, 2, 3, 4].map((slot) => {
-              const tool = data.connectedTools?.[slot - 1];
-              return (
-                <div key={slot} className="relative mb-2">
-                  <Handle
-                    type="target"
-                    position={Position.Left}
-                    id={`tool-${slot}`}
-                    style={{
-                      left: -8,
-                      top: 150 + (slot - 1) * 30,
-                      background: "#8b5cf6",
-                      width: 12,
-                      height: 12,
-                    }}
-                  />
-                  {tool ? (
-                    <div className="ml-6 flex items-center justify-between bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs">
-                      <span>◇ {tool.name}</span>
-                      <X className="w-3 h-3 cursor-pointer hover:text-purple-900" />
-                    </div>
-                  ) : (
-                    <div className="ml-6 text-xs text-gray-300 border border-dashed border-gray-300 rounded px-2 py-1">
-                      Drop tool here
-                    </div>
-                  )}
-                </div>
-              );
-            })}
           </div>
         </div>
       )}
 
-      {/* Output Handle */}
+      {/* --- GLOBAL OUTPUT HANDLE --- */}
+      {/* Placed outside the rows, vertically centered on the entire node */}
       <Handle
         type="source"
         position={Position.Right}
-        id="output"
+        id="response"
+        className="border-2 border-white"
         style={{
-          right: -8,
-          background: "#f59e0b",
-          width: 12,
-          height: 12,
+          backgroundColor: "#f59e0b",
+          width: handleSize,
+          height: handleSize,
+          right: "2px",
+          top: "50%",
         }}
       />
     </div>

@@ -1,0 +1,31 @@
+{
+    "key": "core-output",
+    "name": "Chat Output",
+    "version": "1.0.0",
+    "icon": "message-square",
+    "description": "Displays the final response to the user",
+    "classification": {
+        "capability": "action",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "color": "#10b981",
+        "category": "Core"
+    },
+    "contract": {
+        "inputs": {
+            "response": {
+                "type": "string",
+                "description": "The final text to display"
+            }
+        },
+        "outputs": {}
+    },
+    "paths": {
+        "runtime": "runtime/adapter.py",
+        "core": "core/service.py",
+        "generator_backend": "generators/backend.py",
+        "generator_frontend": "generators/frontend.ts"
+    }
+}

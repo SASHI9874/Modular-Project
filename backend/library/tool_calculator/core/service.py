@@ -32,7 +32,7 @@ def safe_eval(expression: str) -> float:
     """Safely evaluate mathematical expression"""
     
     def eval_node(node):
-        if isinstance(node, ast.Num):
+        if isinstance(node, ast.Constant):
             return node.n
         elif isinstance(node, ast.BinOp):
             op = SAFE_OPERATORS.get(type(node.op))

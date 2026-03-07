@@ -1,5 +1,5 @@
 {
-    "key": "agent-react",
+    "key": "agent_react",
     "name": "ReAct Agent",
     "version": "1.0.0",
     "description": "Reasoning and Acting agent that can use tools to accomplish tasks",

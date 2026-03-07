@@ -12,7 +12,7 @@
     "ui": {
         "icon": "message-circle",
         "color": "#3b82f6",
-        "category": "Triggers",
+        "category": "Core",
         "label": "Chat Input",
         "placement": "main"
     },

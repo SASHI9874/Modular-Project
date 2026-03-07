@@ -1,0 +1,56 @@
+{
+    "key": "model_gemini",
+    "name": "Google Gemini",
+    "version": "1.0.0",
+    "icon": "sparkles",
+    "description": "Provides Google Gemini language model capabilities",
+    "classification": {
+        "capability": "processor",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "color": "#16a34a",
+        "category": "AI Models"
+    },
+    "contract": {
+        "inputs": {},
+        "outputs": {
+            "model": {
+                "type": "object",
+                "description": "The LLM callable"
+            }
+        }
+    },
+    "config": {
+        "api_key": {
+            "type": "password",
+            "label": "Gemini API Key",
+            "description": "Leave blank to use environment variable (GEMINI_API_KEY)"
+        },
+        "model_name": {
+            "type": "select",
+            "label": "Model Name",
+            "options": [
+                "gemini-3-flash-preview",
+                "gemini-2.5-flash",
+                "gemini-1.5-pro",
+                "gemini-1.5-flash"
+            ],
+            "default": "gemini-3-flash-preview"
+        },
+        "temperature": {
+            "type": "number",
+            "label": "Temperature",
+            "default": 0.7,
+            "min": 0,
+            "max": 2
+        }
+    },
+    "paths": {
+        "runtime": "runtime/adapter.py",
+        "core": "core/service.py",
+        "generator_backend": "generators/backend.py",
+        "generator_frontend": "generators/frontend.ts"
+    }
+}
