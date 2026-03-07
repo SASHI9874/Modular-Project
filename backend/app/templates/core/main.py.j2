@@ -1,0 +1,72 @@
+import os
+import sys
+from typing import Any, Dict
+
+# --- Imports Section ---
+import time
+from openai import OpenAI
+
+# --- Configuration ---
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "{{ openai_key }}")
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# --- Node Logic Functions ---
+def pdf_loader(inputs: Dict[str, Any]) -> Dict[str, Any]:
+    print(f"[{time.strftime('%X')}] 📄 Loading PDF...")
+    # Simulated logic
+    return {
+        "text": "Extracted text from PDF: This project is a Low-Code AI Builder."
+    }
+
+def gpt_4(inputs: Dict[str, Any]) -> Dict[str, Any]:
+    print(f"[{time.strftime('%X')}] 🤖 Querying GPT-4...")
+    context = inputs.get("context", "")
+    if isinstance(context, dict):
+        context = context.get("text", str(context))
+        
+    prompt = inputs.get("prompt", "Summarize this")
+    
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": f"Context: {context}\n\nTask: {prompt}"}
+            ]
+        )
+        return {"response": completion.choices[0].message.content}
+    except Exception as e:
+        return {"response": f"Error: {str(e)}"}
+
+# --- Main Execution Flow ---
+def main():
+    print("🚀 Starting AI Workflow...")
+    state = {}
+
+    {% for node in execution_order %}
+    # === Step {{ loop.index }}: {{ node.label }} ({{ node.type }}) ===
+    inputs_{{ node.clean_id }} = {
+        {% for input_key, source_ref in node.inputs.items() %}
+        "{{ input_key }}": state["{{ source_ref.node_id }}"]["{{ source_ref.output_key }}"],
+        {% endfor %}
+    }
+    
+    # Execute
+    {% if node.type == 'pdf-loader' %}
+    state["{{ node.id }}"] = pdf_loader(inputs_{{ node.clean_id }})
+    {% elif node.type == 'gpt-4' %}
+    state["{{ node.id }}"] = gpt_4(inputs_{{ node.clean_id }})
+    {% else %}
+    print("Warning: Unknown node type {{ node.type }}")
+    state["{{ node.id }}"] = {}
+    {% endif %}
+    
+    print(f"✅ Finished {{ node.label }}")
+    print("-" * 30)
+    {% endfor %}
+
+    print("🏁 Workflow Complete.")
+    print("Final State:", state)
+
+if __name__ == "__main__":
+    main()

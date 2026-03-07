@@ -1,0 +1,116 @@
+{
+  "key": "embeddings-universal",
+  "name": "Universal Embeddings",
+  "version": "1.0.0",
+  "description": "Multi-provider text embedding service supporting OpenAI, Azure, and Google",
+  "min_platform_version": "0.1.0",
+  
+  "classification": {
+    "capability": "processor",
+    "execution_model": "sync",
+    "state_scope": "transient"
+  },
+
+  "ui": {
+    "icon": "layers",
+    "color": "#10b981",
+    "category": "AI Models",
+    "label": "Embeddings",
+    "placement": "hidden"
+  },
+
+  "config": {
+    "env": {
+      "EMBEDDING_PROVIDER": {
+        "type": "string",
+        "required": false,
+        "default": "openai",
+        "description": "Provider: 'openai', 'azure', or 'gemini'"
+      },
+      "EMBEDDING_MODEL": {
+        "type": "string",
+        "required": false,
+        "description": "Model name (provider-specific)"
+      },
+      "OPENAI_API_KEY": {
+        "type": "string",
+        "required": false,
+        "description": "Required if provider is openai"
+      },
+      "AZURE_OPENAI_API_KEY": {
+        "type": "string",
+        "required": false,
+        "description": "Required if provider is azure"
+      },
+      "AZURE_OPENAI_ENDPOINT": {
+        "type": "string",
+        "required": false,
+        "description": "Required if provider is azure"
+      },
+      "AZURE_EMBEDDING_DEPLOYMENT": {
+        "type": "string",
+        "required": false,
+        "description": "Required if provider is azure"
+      },
+      "GOOGLE_API_KEY": {
+        "type": "string",
+        "required": false,
+        "description": "Required if provider is gemini"
+      }
+    }
+  },
+
+  "contract": {
+    "inputs": {
+      "text": {
+        "type": "string",
+        "description": "Single text to embed",
+        "optional": true
+      },
+      "texts": {
+        "type": "array",
+        "description": "Multiple texts to embed (batch operation)",
+        "optional": true
+      },
+      "provider": {
+        "type": "string",
+        "description": "Override provider (openai, azure, gemini)",
+        "optional": true
+      },
+      "model": {
+        "type": "string",
+        "description": "Override model name",
+        "optional": true
+      }
+    },
+    "outputs": {
+      "vector": {
+        "type": "array",
+        "description": "Embedding vector (for single text)"
+      },
+      "vectors": {
+        "type": "array",
+        "description": "List of embedding vectors (for batch)"
+      },
+      "dimension": {
+        "type": "number",
+        "description": "Vector dimension"
+      },
+      "provider": {
+        "type": "string",
+        "description": "Provider used"
+      }
+    }
+  },
+
+  "infrastructure": {
+    "system_dependencies": []
+  },
+
+  "paths": {
+    "core": "core/service.py",
+    "runtime": "runtime/adapter.py",
+    "generator_backend": "generator/backend/routes.py",
+    "generator_frontend": "generator/frontend/component.tsx"
+  }
+}

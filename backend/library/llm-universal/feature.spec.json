@@ -1,0 +1,99 @@
+{
+    "key": "llm-universal",
+    "name": "Universal LLM",
+    "version": "1.0.0",
+    "description": "Versatile AI Node supporting OpenAI, Azure, Gemini, and more. Handles both Chat and RAG.",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "action",
+        "execution_model": "sync",
+        "state_scope": "session"
+    },
+    "ui": {
+        "icon": "cpu",
+        "color": "#8b5cf6",
+        "category": "AI Models",
+        "label": "Universal LLM",
+        "placement": "main"
+    },
+    "config": {
+        "env": {
+            "LLM_PROVIDER": {
+                "type": "string",
+                "required": true,
+                "default": "openai",
+                "description": "Provider Name: 'openai', 'azure', 'gemini', 'anthropic'"
+            },
+            "LLM_MODEL": {
+                "type": "string",
+                "required": false,
+                "default": "gpt-4-turbo",
+                "description": "Model Name (e.g., gpt-4, gemini-pro)"
+            },
+            "OPENAI_API_KEY": {
+                "type": "string",
+                "required": false,
+                "description": "Required if provider is openai"
+            },
+            "AZURE_OPENAI_API_KEY": {
+                "type": "string",
+                "required": false,
+                "description": "Required if provider is azure"
+            },
+            "AZURE_OPENAI_ENDPOINT": {
+                "type": "string",
+                "required": false,
+                "description": "Required if provider is azure"
+            },
+            "AZURE_DEPLOYMENT_NAME": {
+                "type": "string",
+                "required": false,
+                "description": "Required if provider is azure"
+            },
+            "GOOGLE_API_KEY": {
+                "type": "string",
+                "required": false,
+                "description": "Required if provider is gemini"
+            }
+        }
+    },
+    "api": {
+        "methods": [
+            {
+                "name": "chat",
+                "verb": "POST",
+                "path": "/chat",
+                "has_file": false,
+                "description": "Send a prompt (with optional context) to the configured LLM."
+            }
+        ]
+    },
+    "contract": {
+        "inputs": {
+            "prompt": {
+                "type": "string",
+                "description": "The user query."
+            },
+            "context": {
+                "type": "string",
+                "description": "Optional RAG context.",
+                "optional": true
+            }
+        },
+        "outputs": {
+            "response": {
+                "type": "string",
+                "description": "The AI response."
+            }
+        }
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

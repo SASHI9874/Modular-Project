@@ -1,0 +1,206 @@
+{
+  "key": "vector_store_chroma",
+  "name": "Chroma Vector Store",
+  "version": "1.0.0",
+  "description": "Local vector database for RAG with indexing and retrieval capabilities",
+  "min_platform_version": "0.1.0",
+  "classification": {
+    "capability": "storage",
+    "execution_model": "sync",
+    "state_scope": "persistent"
+  },
+  "ui": {
+    "icon": "database",
+    "color": "#8b5cf6",
+    "category": "Data Storage",
+    "label": "Vector Store",
+    "placement": "main"
+  },
+  "config": {
+    "env": {
+      "VECTOR_DB_PATH": {
+        "type": "string",
+        "required": false,
+        "description": "Custom path for vector DB storage (defaults to ~/.ai-builder/vector_dbs)"
+      },
+      "DEFAULT_CHUNK_SIZE": {
+        "type": "string",
+        "required": false,
+        "default": "1000",
+        "description": "Default chunk size for text splitting"
+      },
+      "DEFAULT_CHUNK_OVERLAP": {
+        "type": "string",
+        "required": false,
+        "default": "200",
+        "description": "Default chunk overlap"
+      }
+    }
+  },
+  "api": {
+    "methods": [
+      {
+        "name": "index",
+        "verb": "POST",
+        "path": "/index",
+        "has_file": false,
+        "description": "Index documents into vector store"
+      },
+      {
+        "name": "retrieve",
+        "verb": "POST",
+        "path": "/retrieve",
+        "has_file": false,
+        "description": "Retrieve relevant context from vector store"
+      },
+      {
+        "name": "collections",
+        "verb": "GET",
+        "path": "/collections",
+        "has_file": false,
+        "description": "List all collections"
+      },
+      {
+        "name": "stats",
+        "verb": "GET",
+        "path": "/stats",
+        "has_file": false,
+        "description": "Get collection statistics"
+      },
+      {
+        "name": "delete",
+        "verb": "DELETE",
+        "path": "/collection",
+        "has_file": false,
+        "description": "Delete a collection"
+      }
+    ]
+  },
+  "contract": {
+    "inputs": {
+      "operation": {
+        "type": "string",
+        "description": "Operation: 'index', 'retrieve', 'delete', 'list', or 'stats'"
+      },
+      "file_text": {
+        "type": "string",
+        "description": "Text to index (for 'index' operation)",
+        "optional": true
+      },
+      "query": {
+        "type": "string",
+        "description": "Search query (for 'retrieve' operation)",
+        "optional": true
+      },
+      "collection_name": {
+        "type": "string",
+        "description": "Collection name (defaults to 'default')",
+        "optional": true
+      },
+      "metadata": {
+        "type": "object",
+        "description": "Metadata for indexed documents (e.g., {filename: 'doc.pdf'})",
+        "optional": true
+      },
+      "k": {
+        "type": "number",
+        "description": "Number of results to retrieve (default: 3)",
+        "optional": true
+      },
+      "chunk_size": {
+        "type": "number",
+        "description": "Custom chunk size for text splitting",
+        "optional": true
+      },
+      "chunk_overlap": {
+        "type": "number",
+        "description": "Custom chunk overlap",
+        "optional": true
+      },
+      "chunking_strategy": {
+        "type": "string",
+        "description": "Chunking strategy: 'recursive' or 'markdown'",
+        "optional": true
+      },
+      "score_threshold": {
+        "type": "number",
+        "description": "Minimum relevance score (0-1)",
+        "optional": true
+      },
+      "include_sources": {
+        "type": "boolean",
+        "description": "Include source metadata in output",
+        "optional": true
+      }
+    },
+    "outputs": {
+      "result": {
+        "type": "string",
+        "description": "Operation result or retrieved context"
+      },
+      "metadata": {
+        "type": "object",
+        "description": "Additional result metadata (num_results, sources, etc.)"
+      },
+      "success": {
+        "type": "boolean",
+        "description": "Operation success status"
+      }
+    }
+  },
+  "tool_definition": {
+    "name": "knowledge_search",
+    "description": "Searches the knowledge base (vector store) for relevant information. Use this when you need to retrieve context from indexed documents to answer questions.",
+    "parameters": {
+      "query": {
+        "type": "string",
+        "description": "The search query to find relevant information",
+        "required": true
+      },
+      "collection_name": {
+        "type": "string",
+        "description": "The collection to search in (default: 'default')",
+        "required": false,
+        "default": "default"
+      },
+      "k": {
+        "type": "number",
+        "description": "Number of results to return (default: 3)",
+        "required": false,
+        "default": 3
+      }
+    },
+    "returns": {
+      "context": {
+        "type": "string",
+        "description": "Retrieved context from knowledge base"
+      },
+      "num_results": {
+        "type": "number",
+        "description": "Number of results found"
+      }
+    },
+    "examples": [
+      {
+        "input": {
+          "query": "How do I reset my password?",
+          "collection_name": "help_docs",
+          "k": 3
+        },
+        "output": {
+          "context": "To reset your password: 1. Go to Settings...",
+          "num_results": 3
+        }
+      }
+    ]
+  },
+  "infrastructure": {
+    "system_dependencies": []
+  },
+  "paths": {
+    "core": "core/service.py",
+    "runtime": "runtime/adapter.py",
+    "generator_backend": "generator/backend/routes.py",
+    "generator_frontend": "generator/frontend/component.tsx"
+  }
+}

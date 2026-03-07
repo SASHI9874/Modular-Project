@@ -1,0 +1,92 @@
+{
+    "key": "tool_calculator",
+    "name": "Calculator",
+    "version": "1.0.0",
+    "description": "Performs mathematical calculations and arithmetic operations",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "tool",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "icon": "calculator",
+        "color": "#8b5cf6",
+        "category": "Tools",
+        "label": "Calculator",
+        "placement": "main"
+    },
+    "config": {
+        "env": {}
+    },
+    "contract": {
+        "inputs": {
+            "expression": {
+                "type": "string",
+                "description": "Mathematical expression to evaluate (e.g., '5 + 3 * 2')"
+            }
+        },
+        "outputs": {
+            "result": {
+                "type": "number",
+                "description": "Calculation result"
+            },
+            "expression": {
+                "type": "string",
+                "description": "Original expression"
+            }
+        }
+    },
+    "tool_definition": {
+        "name": "calculator",
+        "description": "Performs mathematical calculations. Use this when you need to compute arithmetic operations like addition, subtraction, multiplication, division, exponents, etc.",
+        "parameters": {
+            "expression": {
+                "type": "string",
+                "description": "The math expression to evaluate (e.g., '25 * 4', '(10 + 5) / 3', '2 ** 8')",
+                "required": true
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "number",
+                "description": "The calculated result"
+            }
+        },
+        "examples": [
+            {
+                "input": {
+                    "expression": "5 + 3"
+                },
+                "output": {
+                    "result": 8
+                }
+            },
+            {
+                "input": {
+                    "expression": "25 * 4"
+                },
+                "output": {
+                    "result": 100
+                }
+            },
+            {
+                "input": {
+                    "expression": "2 ** 10"
+                },
+                "output": {
+                    "result": 1024
+                }
+            }
+        ]
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

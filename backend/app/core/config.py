@@ -1,28 +1,36 @@
-# import os
-
-# # Define the root of project dynamically
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# REPO_PATH = os.path.join(BASE_DIR, "modules_repo")
-
 import os
-from pathlib import Path
+from urllib.parse import quote_plus
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-class Settings:
-    # 1. Get the path to this file (backend/core/config.py)
-    # 2. Go up 2 levels: core -> backend
-    BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-    # Define paths relative to the backend folder
-    REPO_PATH = BASE_DIR / "modules_repo"
-    BUILD_DIR = BASE_DIR / "build_temp"
-    OUTPUT_DIR = BASE_DIR / "output_wheels"
+class Settings(BaseSettings):
+    PROJECT_NAME: str = "AI Builder Platform"
+    API_V1_STR: str = "/api/v1"
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "change_this_secret_key_in_production")
     
-    # Default Configs
-    PACKAGE_NAME = "my_custom_ai_sdk"
+    # Database
+    # POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
+    # POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
+    # POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "password")
+    # POSTGRES_DB: str = os.getenv("POSTGRES_DB", "ai_builder")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "databse_url")
+    
+    # MinIO
+    MINIO_ENDPOINT: str = os.getenv("MINIO_ENDPOINT", "minio:9000")
+    MINIO_ACCESS_KEY: str = os.getenv("MINIO_ROOT_USER", "minioadmin")
+    MINIO_SECRET_KEY: str = os.getenv("MINIO_ROOT_PASSWORD", "minioadmin")
+    MINIO_BUCKET_NAME: str = "feature-store"
+    MINIO_SECURE: bool = False
 
-    # Optional: Create directories if they don't exist when config is loaded
-    def ensure_dirs(self):
-        self.BUILD_DIR.mkdir(parents=True, exist_ok=True)
-        self.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return self.DATABASE_URL
+
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore"
+    )
 
 settings = Settings()

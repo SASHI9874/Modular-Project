@@ -1,0 +1,89 @@
+{
+    "key": "agent-react",
+    "name": "ReAct Agent",
+    "version": "1.0.0",
+    "description": "Reasoning and Acting agent that can use tools to accomplish tasks",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "agent",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "icon": "brain",
+        "color": "#f59e0b",
+        "category": "Agents",
+        "label": "ReAct Agent",
+        "placement": "main"
+    },
+    "config": {
+        "env": {
+            "MAX_ITERATIONS": {
+                "type": "number",
+                "default": "10",
+                "description": "Maximum reasoning iterations"
+            },
+            "AGENT_TEMPERATURE": {
+                "type": "number",
+                "default": "0.7",
+                "description": "LLM temperature for agent reasoning"
+            }
+        }
+    },
+    "contract": {
+        "inputs": {
+            "message": {
+                "type": "string",
+                "description": "User's message or query"
+            },
+            "session_id": {
+                "type": "string",
+                "description": "Session identifier",
+                "optional": true
+            }
+        },
+        "connections": {
+            "llm": {
+                "type": "action",
+                "multiple": false,
+                "required": true,
+                "description": "LLM for agent reasoning (connect Universal LLM node)"
+            },
+            "memory": {
+                "type": "storage",
+                "multiple": false,
+                "required": false,
+                "description": "Memory/context storage (optional, for Phase 5)"
+            },
+            "tools": {
+                "type": "tool",
+                "multiple": true,
+                "required": false,
+                "description": "Tools this agent can use"
+            }
+        },
+        "outputs": {
+            "response": {
+                "type": "string",
+                "description": "Agent's final response"
+            },
+            "tool_calls_made": {
+                "type": "array",
+                "description": "List of tools called during execution"
+            },
+            "iterations_used": {
+                "type": "number",
+                "description": "Number of reasoning iterations"
+            }
+        }
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/orchestrator.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

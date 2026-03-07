@@ -1,0 +1,66 @@
+{
+  "key": "pdf-loader",
+  "name": "PDF Document Loader",
+  "version": "1.0.0",
+  "description": "Uploads a PDF file, extracts text, and stores it for the session.",
+  "min_platform_version": "0.1.0",
+  "classification": {
+    "capability": "input",
+    "execution_model": "sync",
+    "state_scope": "session"
+  },
+  "ui": {
+    "icon": "file-text",
+    "color": "#ef4444",
+    "category": "Loaders",
+    "label": "PDF Upload",
+    "placement": "sidebar"
+  },
+  "limits": {
+    "timeout_seconds": 60,
+    "memory_mb": 256
+  },
+  "config": {
+    "env": {
+      "MAX_UPLOAD_SIZE_MB": {
+        "type": "number",
+        "required": false,
+        "default": 10,
+        "description": "Maximum allowed file size in Megabytes"
+      }
+    }
+  },
+  "infrastructure": {
+    "system_dependencies": []
+  },
+  "contract": {
+    "inputs": {},
+    "outputs": {
+      "file_text": {
+        "type": "string",
+        "description": "The raw text extracted from the PDF."
+      },
+      "filename": {
+        "type": "string",
+        "description": "Name of the uploaded file."
+      }
+    }
+  },
+  "api": {
+    "methods": [
+      {
+        "name": "upload",
+        "verb": "POST",
+        "path": "/upload",
+        "has_file": true,
+        "description": "Uploads a PDF and extracts text"
+      }
+    ]
+  },
+  "paths": {
+    "core": "core/service.py",
+    "runtime": "runtime/adapter.py",
+    "generator_backend": "generator/backend/routes.py",
+    "generator_frontend": "generator/frontend/component.tsx"
+  }
+}

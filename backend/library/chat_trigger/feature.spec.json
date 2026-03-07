@@ -1,0 +1,53 @@
+{
+    "key": "chat_trigger",
+    "name": "Chat Input",
+    "version": "1.0.0",
+    "description": "Entry point for conversational flows. Captures user messages and initiates agent execution.",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "trigger",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "icon": "message-circle",
+        "color": "#3b82f6",
+        "category": "Triggers",
+        "label": "Chat Input",
+        "placement": "main"
+    },
+    "config": {
+        "env": {}
+    },
+    "contract": {
+        "inputs": {},
+        "outputs": {
+            "message": {
+                "type": "string",
+                "description": "User's chat message"
+            },
+            "session_id": {
+                "type": "string",
+                "description": "Unique session identifier"
+            },
+            "timestamp": {
+                "type": "string",
+                "description": "Message timestamp"
+            },
+            "user_id": {
+                "type": "string",
+                "description": "Optional user identifier",
+                "optional": true
+            }
+        }
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}
