@@ -1,0 +1,147 @@
+{
+    "key": "code_tools",
+    "name": "Code Tools",
+    "version": "1.0.0",
+    "description": "File operations and code search for coding agents",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "tool",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "icon": "file-code",
+        "color": "#8b5cf6",
+        "category": "Tools",
+        "label": "Code Tools",
+        "placement": "main"
+    },
+    "config": {
+        "env": {
+            "WORKSPACE_ROOT": {
+                "type": "string",
+                "required": false,
+                "description": "Root directory for file operations"
+            },
+            "MAX_FILE_SIZE": {
+                "type": "string",
+                "default": "1000000",
+                "description": "Max file size in bytes (default 1MB)"
+            }
+        }
+    },
+    "contract": {
+        "inputs": {
+            "operation": {
+                "type": "string",
+                "description": "Operation: read_file, write_file, search_code, list_directory, run_command, git_diff"
+            },
+            "path": {
+                "type": "string",
+                "description": "File or directory path",
+                "optional": true
+            },
+            "content": {
+                "type": "string",
+                "description": "Content for write operations",
+                "optional": true
+            },
+            "query": {
+                "type": "string",
+                "description": "Search query",
+                "optional": true
+            },
+            "command": {
+                "type": "string",
+                "description": "Shell command to run",
+                "optional": true
+            }
+        },
+        "outputs": {
+            "result": {
+                "type": "string",
+                "description": "Operation result"
+            },
+            "success": {
+                "type": "boolean",
+                "description": "Operation success status"
+            }
+        }
+    },
+    "tool_definition": {
+        "name": "code_tools",
+        "description": "Perform file operations and code searches. Use this to read files, write code, search codebase, list directories, run commands, or check git changes.",
+        "parameters": {
+            "operation": {
+                "type": "string",
+                "description": "Operation to perform",
+                "required": true,
+                "enum": [
+                    "read_file",
+                    "write_file",
+                    "search_code",
+                    "list_directory",
+                    "run_command",
+                    "git_diff"
+                ]
+            },
+            "path": {
+                "type": "string",
+                "description": "File or directory path (required for read_file, write_file, list_directory)",
+                "required": false
+            },
+            "content": {
+                "type": "string",
+                "description": "Content to write (required for write_file)",
+                "required": false
+            },
+            "query": {
+                "type": "string",
+                "description": "Search query (required for search_code)",
+                "required": false
+            },
+            "command": {
+                "type": "string",
+                "description": "Shell command (required for run_command)",
+                "required": false
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "string",
+                "description": "Operation result or file content"
+            }
+        },
+        "examples": [
+            {
+                "input": {
+                    "operation": "read_file",
+                    "path": "main.py"
+                },
+                "output": {
+                    "result": "# File content here..."
+                }
+            },
+            {
+                "input": {
+                    "operation": "search_code",
+                    "query": "def authenticate"
+                },
+                "output": {
+                    "result": "Found in: auth.py:45, middleware.py:12"
+                }
+            }
+        ]
+    },
+    "infrastructure": {
+        "system_dependencies": [
+            "git"
+        ]
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.entities.user_entity import User
 
-# 1. Define where the token comes from (the login endpoint)
+# Define where the token comes from (the login endpoint)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/login")
 
 def get_db() -> Generator:
@@ -20,7 +20,7 @@ def get_db() -> Generator:
     finally:
         db.close()
 
-# 2. The Gatekeeper Function
+# The Gatekeeper Function
 def get_current_user(
     db: Session = Depends(get_db),
     token: str = Depends(oauth2_scheme)

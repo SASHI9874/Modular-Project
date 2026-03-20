@@ -1,0 +1,121 @@
+{
+    "key": "code_intelligence",
+    "name": "Code Intelligence",
+    "version": "1.0.0",
+    "description": "Codebase indexing, semantic search, and context building for coding agents",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "tool",
+        "execution_model": "sync",
+        "state_scope": "persistent"
+    },
+    "ui": {
+        "icon": "brain-circuit",
+        "color": "#ec4899",
+        "category": "Tools",
+        "label": "Code Intelligence",
+        "placement": "main"
+    },
+    "config": {
+        "env": {
+            "INDEX_PATH": {
+                "type": "string",
+                "required": false,
+                "description": "Path to store code index"
+            },
+            "MAX_CONTEXT_FILES": {
+                "type": "string",
+                "default": "5",
+                "description": "Max files to include in context"
+            }
+        }
+    },
+    "contract": {
+        "inputs": {
+            "operation": {
+                "type": "string",
+                "description": "Operation: index, search, get_context, analyze_deps"
+            },
+            "query": {
+                "type": "string",
+                "description": "Search query or file path",
+                "optional": true
+            },
+            "workspace_path": {
+                "type": "string",
+                "description": "Path to workspace to index",
+                "optional": true
+            }
+        },
+        "outputs": {
+            "result": {
+                "type": "string",
+                "description": "Operation result"
+            },
+            "files": {
+                "type": "array",
+                "description": "Relevant files"
+            },
+            "success": {
+                "type": "boolean",
+                "description": "Operation success"
+            }
+        }
+    },
+    "tool_definition": {
+        "name": "code_intelligence",
+        "description": "Understand codebase structure and find relevant code. Use this to search semantically, find dependencies, or build context for code tasks.",
+        "parameters": {
+            "operation": {
+                "type": "string",
+                "description": "Operation to perform",
+                "required": true,
+                "enum": [
+                    "index",
+                    "search",
+                    "get_context",
+                    "analyze_deps"
+                ]
+            },
+            "query": {
+                "type": "string",
+                "description": "Search query or file path",
+                "required": false
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "string",
+                "description": "Intelligence result"
+            },
+            "files": {
+                "type": "array",
+                "description": "Relevant file paths"
+            }
+        },
+        "examples": [
+            {
+                "input": {
+                    "operation": "search",
+                    "query": "authentication logic"
+                },
+                "output": {
+                    "files": [
+                        "auth.py",
+                        "middleware.py",
+                        "models/user.py"
+                    ]
+                }
+            }
+        ]
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

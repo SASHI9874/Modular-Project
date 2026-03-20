@@ -1,0 +1,66 @@
+{
+    "key": "interface_vscode",
+    "name": "VS Code",
+    "version": "1.0.0",
+    "description": "VS Code extension interface for coding agents",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "interface",
+        "execution_model": "async",
+        "state_scope": "session"
+    },
+    "ui": {
+        "icon": "code",
+        "color": "#0078d4",
+        "category": "Interfaces",
+        "label": "VS Code",
+        "placement": "main"
+    },
+    "config": {
+        "env": {
+            "BACKEND_URL": {
+                "type": "string",
+                "default": "http://localhost:8000",
+                "description": "Backend URL"
+            }
+        }
+    },
+    "contract": {
+        "inputs": {
+            "agent_response": {
+                "type": "string",
+                "description": "Response from agent"
+            }
+        },
+        "outputs": {
+            "user_message": {
+                "type": "string",
+                "description": "User input from VS Code"
+            },
+            "context": {
+                "type": "object",
+                "description": "Editor context (file, cursor, selection)"
+            }
+        },
+        "connections": {
+            "agent": {
+                "type": "interface",
+                "multiple": false,
+                "required": true,
+                "description": "Connected agent"
+            }
+        }
+    },
+    "infrastructure": {
+        "system_dependencies": [
+            "node",
+            "npm"
+        ]
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/"
+    }
+}

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, validator
 from typing import Dict, List, Optional, Literal, Any
 from enum import Enum
 
@@ -48,6 +48,7 @@ class ConnectionType(str, Enum):
     TOOL = "tool"           # Tool availability for agents
     MEMORY = "memory"       # Memory/context passing
     CONDITIONAL = "conditional"  # If/else branches (future)
+    INTERFACE  = "interface"   # Bidiractional
 
 class ConnectionMetadata:
     """Metadata for a connection"""
@@ -70,9 +71,9 @@ class ConnectionSpec(BaseModel):
     required: bool = False
     description: Optional[str] = None
     
-    @validator('type')
+    @field_validator('type')
     def validate_connection_type(cls, v):
-        valid_types = ['tool', 'memory', 'conditional', 'action', 'storage']
+        valid_types = ['tool', 'memory', 'conditional', 'action', 'storage', 'interface']
         if v not in valid_types:
             raise ValueError(f'Invalid connection type: {v}. Must be one of {valid_types}')
         return v
@@ -108,7 +109,8 @@ class FeatureClassification(BaseModel):
         "action",     # Performs actions (LLM, API Call)
         "trigger",    # Entry points (Chat Input, Webhook)
         "agent",      # Agent orchestrators (ReAct Agent)
-        "tool"        # Tools for agents (Calculator, Search)
+        "tool",        # Tools for agents (Calculator, Search)
+        "interface"   # UI
     ]
     execution_model: Literal["sync", "async", "background"]
     state_scope: Literal["transient", "session", "persistent"]

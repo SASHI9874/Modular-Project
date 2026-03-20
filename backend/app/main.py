@@ -1,10 +1,12 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware  # <--- Import this
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.api import api_router
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title=settings.PROJECT_NAME)
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allow Frontend

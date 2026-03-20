@@ -9,6 +9,7 @@ import {
   Database,
   Wrench,
   MessageSquare,
+  Monitor,
 } from "lucide-react";
 
 interface AgentNodeProps {
@@ -18,6 +19,7 @@ interface AgentNodeProps {
     connectedModel?: string;
     connectedMemory?: string;
     connectedTools?: Array<{ id: string; name: string }>;
+    connectedInterface?: string;
   };
   selected: boolean;
 }
@@ -28,13 +30,16 @@ export default function AgentNode({ data, selected }: AgentNodeProps) {
   // Increased size slightly and pushed further out from the border
   const handleSize = 12;
   const leftOffset = "2px";
+  const rightOffset = "2px";
 
   const toolCount = data.connectedTools?.length || 0;
   const isMemoryConnected = !!data.connectedMemory;
   const isModelConnected = !!data.connectedModel;
+  const isInterfaceConnected = !!data.connectedInterface;
 
   const rowBaseClass =
     "relative flex items-center pl-6 pr-4 py-2 hover:bg-gray-50 transition-colors cursor-default";
+  const rightRowClass = `${rowBaseClass} justify-end pl-4 pr-6`;
 
   return (
     <div
@@ -180,6 +185,38 @@ export default function AgentNode({ data, selected }: AgentNodeProps) {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Interface Row (Right Side) */}
+          <div className={rightRowClass}>
+            <div className="flex items-center gap-3 text-right">
+              <div className="flex flex-col items-end">
+                <span className="text-[13px] font-medium text-gray-800">
+                  Interface
+                </span>
+                <span
+                  className={`text-[11px] ${isInterfaceConnected ? "text-teal-600 font-medium" : "text-gray-400"}`}
+                >
+                  {isInterfaceConnected
+                    ? data.connectedInterface
+                    : "Connect interface node"}
+                </span>
+              </div>
+              <Monitor className="w-3.5 h-3.5 text-teal-500" />
+            </div>
+            <Handle
+              type="source"
+              position={Position.Right}
+              id="interface"
+              className="border-2 border-white"
+              style={{
+                backgroundColor: "#14b8a6",
+                width: handleSize,
+                height: handleSize,
+                right: rightOffset,
+                top: "50%",
+              }}
+            />
           </div>
         </div>
       )}

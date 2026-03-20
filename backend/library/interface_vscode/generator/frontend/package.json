@@ -1,0 +1,68 @@
+{
+    "name": "ai-coding-agent",
+    "displayName": "AI Coding Agent",
+    "description": "AI-powered coding assistant",
+    "version": "1.0.0",
+    "publisher": "your-publisher-name",
+    "license": "MIT",
+    "icon": "icon.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/yourusername/ai-agent"
+    },
+    "engines": {
+        "vscode": "^1.80.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "aiAgent.chat",
+                "title": "AI Agent: Open Chat"
+            },
+            {
+                "command": "aiAgent.explainCode",
+                "title": "AI Agent: Explain Selected Code"
+            },
+            {
+                "command": "aiAgent.refactor",
+                "title": "AI Agent: Refactor Code"
+            }
+        ],
+        "configuration": {
+            "title": "AI Coding Agent",
+            "properties": {
+                "aiAgent.backendUrl": {
+                    "type": "string",
+                    "default": "ws://localhost:8000",
+                    "description": "Backend WebSocket URL"
+                },
+                "aiAgent.autoConnect": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Auto-connect to backend on startup"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^18.0.0",
+        "@types/vscode": "^1.80.0",
+        "@types/ws": "^8.5.0",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "ws": "^8.14.0"
+    }
+}

@@ -1,0 +1,125 @@
+{
+    "key": "patch_system",
+    "name": "Patch System",
+    "version": "1.0.0",
+    "description": "Safe code editing with git-style patches, validation, and multi-file planning",
+    "min_platform_version": "0.1.0",
+    "classification": {
+        "capability": "tool",
+        "execution_model": "sync",
+        "state_scope": "transient"
+    },
+    "ui": {
+        "icon": "file-diff",
+        "color": "#f59e0b",
+        "category": "Tools",
+        "label": "Patch System",
+        "placement": "main"
+    },
+    "config": {
+        "env": {}
+    },
+    "contract": {
+        "inputs": {
+            "operation": {
+                "type": "string",
+                "description": "Operation: generate, validate, apply, plan_multi"
+            },
+            "file_path": {
+                "type": "string",
+                "description": "File to patch",
+                "optional": true
+            },
+            "old_content": {
+                "type": "string",
+                "description": "Original content",
+                "optional": true
+            },
+            "new_content": {
+                "type": "string",
+                "description": "New content",
+                "optional": true
+            },
+            "patch": {
+                "type": "string",
+                "description": "Patch to validate/apply",
+                "optional": true
+            },
+            "task_description": {
+                "type": "string",
+                "description": "Task for multi-file planning",
+                "optional": true
+            }
+        },
+        "outputs": {
+            "result": {
+                "type": "string",
+                "description": "Operation result or patch"
+            },
+            "success": {
+                "type": "boolean",
+                "description": "Operation success"
+            }
+        }
+    },
+    "tool_definition": {
+        "name": "patch_system",
+        "description": "Generate and apply safe code patches. Use this to create diffs, validate changes, or plan multi-file edits.",
+        "parameters": {
+            "operation": {
+                "type": "string",
+                "description": "Operation to perform",
+                "required": true,
+                "enum": [
+                    "generate",
+                    "validate",
+                    "apply",
+                    "plan_multi"
+                ]
+            },
+            "file_path": {
+                "type": "string",
+                "description": "File path",
+                "required": false
+            },
+            "old_content": {
+                "type": "string",
+                "description": "Original file content",
+                "required": false
+            },
+            "new_content": {
+                "type": "string",
+                "description": "Updated file content",
+                "required": false
+            }
+        },
+        "returns": {
+            "result": {
+                "type": "string",
+                "description": "Patch or result"
+            }
+        },
+        "examples": [
+            {
+                "input": {
+                    "operation": "generate",
+                    "file_path": "main.py",
+                    "old_content": "def hello():\n    print('hi')",
+                    "new_content": "def hello():\n    print('Hello, World!')"
+                },
+                "output": {
+                    "result": "--- main.py\n+++ main.py\n..."
+                }
+            }
+        ]
+    },
+    "infrastructure": {
+        "system_dependencies": []
+    },
+    "paths": {
+        "core": "core/service.py",
+        "runtime": "runtime/adapter.py",
+        "generator_backend": "generator/backend/routes.py",
+        "generator_frontend": "generator/frontend/component.tsx"
+    }
+}

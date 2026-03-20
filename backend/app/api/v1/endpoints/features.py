@@ -9,7 +9,7 @@ import json
 from app.api.deps import get_db, get_current_user
 from app.entities.user_entity import User
 from app.entities.feature_entity import FeatureEntity
-from app.services.feature_registry.storage_handler import storage
+# from app.services.feature_registry.storage_handler import storage
 from app.domain.feature.trust_level import FeatureTrustLevel
 
 router = APIRouter()
@@ -34,7 +34,9 @@ def create_feature(
     
     # 3. Upload to MinIO
     try:
-        s3_path = storage.upload_code(object_name, content)
+        # s3_path = storage.upload_code(object_name, content)
+        s3_path = "datadisk/upload"
+        pass
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Storage upload failed: {str(e)}")
 

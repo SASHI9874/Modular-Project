@@ -19,7 +19,7 @@ class AppPackager:
         """Helper to read source code from the library disk"""
         full_path = os.path.join(base_path, relative_path)
         if os.path.exists(full_path):
-            with open(full_path, "r") as f:
+            with open(full_path, "r", encoding="utf-8") as f:
                 return f.read()
         return f"# Error: File not found {relative_path}"
     
@@ -238,7 +238,7 @@ export const useAppStore = () => {{
             # Load requirements.txt if exists
             req_path = os.path.join(manifest.base_path, "requirements.txt")
             if os.path.exists(req_path):
-                with open(req_path, "r") as f:
+                with open(req_path, "r", encoding="utf-8") as f:
                     for line in f:
                         if line.strip(): requirements.add(line.strip())
 

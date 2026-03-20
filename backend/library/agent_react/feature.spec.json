@@ -55,6 +55,12 @@
                 "required": false,
                 "description": "Memory/context storage (optional, for Phase 5)"
             },
+            "interface": {
+                "type": "interface",
+                "multiple": false,
+                "required": false,
+                "description": "UI interface (optional)"
+            },
             "tools": {
                 "type": "tool",
                 "multiple": true,
