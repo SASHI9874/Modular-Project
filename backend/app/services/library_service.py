@@ -18,7 +18,7 @@ class LibraryService:
 
     def scan(self):
         """Walks the library directory and loads feature.spec.json files."""
-        print(f"🔍 Scanning Library at: {self.library_path}")
+        print(f" Scanning Library at: {self.library_path}")
         self.features = {} # Reset
         print("library path ",self.library_path)
         if not os.path.exists(self.library_path):

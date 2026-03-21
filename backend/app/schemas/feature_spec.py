@@ -12,25 +12,54 @@ class FeatureConfigField(BaseModel):
 class FeatureConfig(BaseModel):
     env: Dict[str, FeatureConfigField] = {}
 
-# --- 2. UI METADATA (Sidebar Info) ---
+# Execution Visibility
+class ExecutionVisibility(str, Enum):
+    RUNTIME = "runtime"    # Goes in downloaded backend
+    EDITOR = "editor"      # Only on canvas, not in download
+    BOTH = "both"          # Both places
+
+
+#  Frontend Mode
+class FrontendMode(str, Enum):
+    GENERATED_UI = "generated_ui"           # Auto-generate React dashboard
+    EXTERNAL_EXTENSION = "external_extension"  # VS Code/CLI extension
+    HEADLESS = "headless"                   # API only, no UI
+
+
+# UI Placement
+class UIPlacement(str, Enum):
+    SIDEBAR = "sidebar"
+    MAIN = "main"
+    HIDDEN = "hidden"
+
+# ---  UI METADATA (Sidebar Info) ---
 class FeatureUI(BaseModel):
     icon: Optional[str] = "box"       # Lucide icon name
     color: Optional[str] = "#6366f1"  # Hex color
     category: Optional[str] = "General"
     label: Optional[str] = None       # Human readable name
     placement: Literal["sidebar", "main", "hidden"] = "main"
+    has_component: bool = True
+    ui_placement: UIPlacement = UIPlacement.MAIN
+    priority: int = 5  # 1-10, higher = more prominent
+    execution_visibility: ExecutionVisibility = ExecutionVisibility.RUNTIME
 
-# --- 3. EXECUTION LIMITS (Safety) ---
+#  Dependencies
+class FeatureDependencies(BaseModel):
+    runtime: List[str] = Field(default_factory=list)
+    optional: List[str] = Field(default_factory=list)
+
+# ---  EXECUTION LIMITS (Safety) ---
 class FeatureLimits(BaseModel):
     timeout_seconds: int = 30
     memory_mb: int = 512
 
-# --- 4. STORAGE (Infrastructure) ---
+# --- STORAGE (Infrastructure) ---
 class FeatureStorage(BaseModel):
     tables: List[str] = []
     vector_store: bool = False
 
-# --- 5. API DEFINITION (For Client Generation) ---
+# --- API DEFINITION (For Client Generation) ---
 class ApiMethod(BaseModel):
     name: str              # e.g. "upload"
     verb: Literal["GET", "POST", "PUT", "DELETE"] = "POST"
@@ -41,7 +70,7 @@ class ApiMethod(BaseModel):
 class FeatureApi(BaseModel):
     methods: List[ApiMethod] = []
 
-# --- 6. CONNECTION TYPES (NEW - FOR AGENTS) ---
+# ---  CONNECTION TYPES ---
 class ConnectionType(str, Enum):
     """Types of connections between nodes"""
     DATA = "data"           # Normal data flow
@@ -78,7 +107,7 @@ class ConnectionSpec(BaseModel):
             raise ValueError(f'Invalid connection type: {v}. Must be one of {valid_types}')
         return v
 
-# --- 7. TOOL DEFINITION (NEW - FOR AGENT TOOLS) ---
+# --- 7. TOOL DEFINITION  ---
 class ToolParameter(BaseModel):
     """Parameter definition for a tool"""
     type: str  # "string", "number", "boolean", "object", "array"
@@ -100,7 +129,7 @@ class ToolDefinition(BaseModel):
     # Examples to help LLM understand usage
     examples: Optional[List[Dict[str, Any]]] = None
 
-# --- UPDATED CLASSIFICATION (WITH NEW TYPES) ---
+# --- CLASSIFICATION  ---
 class FeatureClassification(BaseModel):
     capability: Literal[
         "input",      # Takes external data (Document Upload, API Input)
@@ -123,7 +152,7 @@ class DataField(BaseModel):
     description: Optional[str] = None
     optional: bool = False  # NEW: Mark optional fields
 
-# --- UPDATED CONTRACT (WITH CONNECTIONS) ---
+# --- CONTRACT (WITH CONNECTIONS) ---
 class FeatureContract(BaseModel):
     inputs: Dict[str, DataField] = {}
     outputs: Dict[str, DataField] = {}
@@ -154,13 +183,16 @@ class FeatureManifest(BaseModel):
     storage: Optional[FeatureStorage] = None
     api: FeatureApi = Field(default_factory=FeatureApi)
     
-    # NEW: Tool definition (if this feature can be used as a tool)
+    # Tool definition (if this feature can be used as a tool)
     tool_definition: Optional[ToolDefinition] = None
 
+    # Dependeny
+    dependencies: Optional[FeatureDependencies] = None
+    frontend_mode: Optional[FrontendMode] = None
     # Internal
     base_path: Optional[str] = None
     
-    # NEW: Validation for agent-specific requirements
+    # Validation for agent-specific requirements
     @validator('contract')
     def validate_agent_contract(cls, v, values):
         """Validate that agent features have required connections"""

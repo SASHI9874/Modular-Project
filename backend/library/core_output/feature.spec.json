@@ -11,7 +11,13 @@
     },
     "ui": {
         "color": "#10b981",
-        "category": "Core"
+        "category": "Core",
+        "execution_visibility": "editor",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "contract": {
         "inputs": {

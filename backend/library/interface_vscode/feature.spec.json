@@ -14,7 +14,13 @@
         "color": "#0078d4",
         "category": "Interfaces",
         "label": "VS Code",
-        "placement": "main"
+        "placement": "main",
+        "execution_visibility": "runtime",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "config": {
         "env": {

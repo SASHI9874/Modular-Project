@@ -14,7 +14,13 @@
         "color": "#8b5cf6",
         "category": "Tools",
         "label": "Code Tools",
-        "placement": "main"
+        "placement": "main",
+        "execution_visibility": "both",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "config": {
         "env": {

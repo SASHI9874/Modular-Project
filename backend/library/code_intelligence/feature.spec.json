@@ -14,7 +14,13 @@
         "color": "#ec4899",
         "category": "Tools",
         "label": "Code Intelligence",
-        "placement": "main"
+        "placement": "main",
+        "execution_visibility": "both",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "config": {
         "env": {

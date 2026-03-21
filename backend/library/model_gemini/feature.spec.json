@@ -10,8 +10,17 @@
         "state_scope": "transient"
     },
     "ui": {
+        "icon": "brain",
         "color": "#16a34a",
-        "category": "AI Models"
+        "category": "AI Models",
+        "label": "Gemini",
+        "placement": "main",
+        "execution_visibility": "both",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "contract": {
         "inputs": {},

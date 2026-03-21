@@ -14,7 +14,13 @@
         "color": "#3b82f6",
         "category": "Core",
         "label": "Chat Input",
-        "placement": "main"
+        "placement": "main",
+        "execution_visibility": "runtime",
+        "has_component": true
+    },
+    "dependencies": {
+        "runtime": [],
+        "optional": []
     },
     "config": {
         "env": {}

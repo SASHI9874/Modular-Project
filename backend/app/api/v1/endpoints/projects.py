@@ -2,7 +2,7 @@ import logging
 from typing import Any, Dict
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.responses import PlainTextResponse
-from app.services.packager.packager_service import AppPackager
+from app.services.packager.packager_service import PackagerService
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_current_user
@@ -127,8 +127,8 @@ def download_project(
         raise HTTPException(status_code=404, detail="Project not found")
 
     try:
-        packager = AppPackager(project.graph_json, project.name)
-        zip_bytes = packager.create_zip()
+        packager = PackagerService(project.graph_json, project.name)
+        zip_bytes = packager.create_package()
         
         filename = f"{project.name.replace(' ', '_')}_App.zip"
 
