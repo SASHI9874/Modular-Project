@@ -58,7 +58,7 @@ class BackendGenerator:
             registrations.append(reg_stmt)
         
         imports_code = "\n".join(imports)
-        registrations_code = "\n    ".join(registrations)
+        registrations_code = "\n".join(registrations)
         
         return f'''
 from fastapi import FastAPI
@@ -127,14 +127,94 @@ if __name__ == "__main__":
                     with open(core_path, 'r', encoding='utf-8') as f:
                         files[f'backend/features/{safe_key}/service.py'] = f.read()
             
-            # Copy generator/backend/routes.py
+            # Check if feature has custom routes
+            has_custom_routes = False
             if manifest.paths.generator_backend:
                 routes_path = os.path.join(manifest.base_path, manifest.paths.generator_backend)
                 if os.path.exists(routes_path):
                     with open(routes_path, 'r', encoding='utf-8') as f:
                         files[f'backend/features/{safe_key}/routes.py'] = f.read()
+                        has_custom_routes = True
             
-            # Create __init__.py
-            files[f'backend/features/{safe_key}/__init__.py'] = ''
+            # Generate default routes if not present
+            if not has_custom_routes:
+                routes_content = self._generate_default_routes(key, manifest, safe_key)
+                files[f'backend/features/{safe_key}/routes.py'] = routes_content
+            
+            # Create __init__.py that exposes routes
+            init_content = f'''"""{manifest.name} Feature"""
+from . import routes
+
+__all__ = ['routes']
+'''
+            files[f'backend/features/{safe_key}/__init__.py'] = init_content
         
         return files
+
+    def _generate_default_routes(self, feature_key: str, manifest, safe_key: str) -> str:
+        """Generate default API routes for features without custom routes"""
+        
+        capability = manifest.classification.capability
+        has_runtime = bool(manifest.paths.runtime)
+        
+        if has_runtime:
+            # Generate execute route that calls adapter
+            return f'''from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+from typing import Dict, Any
+from .adapter import run
+
+router = APIRouter()
+
+class ExecuteRequest(BaseModel):
+    inputs: Dict[str, Any]
+    context: Dict[str, Any] = {{}}
+
+@router.post("/execute")
+async def execute(request: ExecuteRequest):
+    """Execute {manifest.name} - Capability: {capability}"""
+    try:
+        result = run(request.inputs, request.context)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/health")
+async def health():
+    """Health check for {manifest.name}"""
+    return {{
+        "status": "ok",
+        "feature": "{feature_key}",
+        "name": "{manifest.name}",
+        "capability": "{capability}",
+        "version": "{manifest.version}"
+    }}
+'''
+        else:
+            # Basic health check only
+            return f'''from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/health")
+async def health():
+    """Health check for {manifest.name}"""
+    return {{
+        "status": "ok",
+        "feature": "{feature_key}",
+        "name": "{manifest.name}",
+        "capability": "{capability}",
+        "version": "{manifest.version}"
+    }}
+
+@router.get("/info")
+async def info():
+    """Get feature information"""
+    return {{
+        "key": "{feature_key}",
+        "name": "{manifest.name}",
+        "version": "{manifest.version}",
+        "capability": "{capability}",
+        "description": "{manifest.description}"
+    }}
+'''
