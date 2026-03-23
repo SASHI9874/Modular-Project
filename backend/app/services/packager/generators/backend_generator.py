@@ -120,12 +120,25 @@ if __name__ == "__main__":
             
             safe_key = key.replace('-', '_')
             
+            # Determine which files to copy
+            has_adapter = False
+            has_service = False
+            
+            # Copy runtime/adapter.py
+            if manifest.paths.runtime:
+                runtime_path = os.path.join(manifest.base_path, manifest.paths.runtime)
+                if os.path.exists(runtime_path):
+                    with open(runtime_path, 'r', encoding='utf-8') as f:
+                        files[f'backend/features/{safe_key}/adapter.py'] = f.read()
+                        has_adapter = True
+
             # Copy core/service.py
             if manifest.paths.core:
                 core_path = os.path.join(manifest.base_path, manifest.paths.core)
                 if os.path.exists(core_path):
                     with open(core_path, 'r', encoding='utf-8') as f:
                         files[f'backend/features/{safe_key}/service.py'] = f.read()
+                        has_service = True
             
             # Check if feature has custom routes
             has_custom_routes = False
