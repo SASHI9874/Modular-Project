@@ -132,13 +132,36 @@ if __name__ == "__main__":
                         files[f'backend/features/{safe_key}/adapter.py'] = f.read()
                         has_adapter = True
 
-            # Copy core/service.py
+            # Copy entire core directory, preserving the folder itself
             if manifest.paths.core:
-                core_path = os.path.join(manifest.base_path, manifest.paths.core)
-                if os.path.exists(core_path):
-                    with open(core_path, 'r', encoding='utf-8') as f:
-                        files[f'backend/features/{safe_key}/service.py'] = f.read()
-                        has_service = True
+                core_target_path = os.path.join(manifest.base_path, manifest.paths.core)
+                
+                # Determine the directory to copy
+                core_dir = os.path.dirname(core_target_path) if os.path.isfile(core_target_path) else core_target_path
+                
+                if os.path.exists(core_dir) and os.path.isdir(core_dir):
+                    # NEW: Get the parent directory of 'core' so we preserve the folder name
+                    parent_dir = os.path.dirname(os.path.normpath(core_dir))
+                    
+                    for root, _, filenames in os.walk(core_dir):
+                        for filename in filenames:
+                            # Skip compiled python files and hidden files
+                            if filename.endswith('.pyc') or '__pycache__' in root or filename.startswith('.'):
+                                continue
+                                
+                            file_path = os.path.join(root, filename)
+                            
+                            # NEW: Calculate the relative path from the parent directory
+                            # This turns "/path/to/feature/core/service.py" into "core/service.py"
+                            rel_path = os.path.relpath(file_path, parent_dir)
+                            dest_path = f'backend/features/{safe_key}/{rel_path}'
+                            
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                files[dest_path] = f.read()
+                                
+                                # Flag if we found the main service.py
+                                if filename == 'service.py':
+                                    has_service = True
             
             # Check if feature has custom routes
             has_custom_routes = False
