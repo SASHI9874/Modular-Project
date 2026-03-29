@@ -12,7 +12,7 @@ def get_embeddings_model(override_config: dict = None) -> Any:
     config = override_config or {}
     provider = config.get("provider") or os.getenv("EMBEDDING_PROVIDER", "openai").lower()
     
-    print(f"🔧 [Embeddings] Initializing provider: {provider}")
+    print(f" [Embeddings] Initializing provider: {provider}")
     
     try:
         if provider == "openai":
@@ -96,11 +96,11 @@ def embed_text(text: str, override_config: dict = None) -> List[float]:
     try:
         embeddings = get_embeddings_model(override_config)
         vector = embeddings.embed_query(text)
-        print(f"✅ [Embeddings] Generated vector of dimension {len(vector)}")
+        print(f" [Embeddings] Generated vector of dimension {len(vector)}")
         return vector
     
     except Exception as e:
-        print(f"❌ [Embeddings] Error: {str(e)}")
+        print(f" [Embeddings] Error: {str(e)}")
         raise
 
 
@@ -118,11 +118,11 @@ def embed_documents(texts: List[str], override_config: dict = None) -> List[List
     try:
         embeddings = get_embeddings_model(override_config)
         vectors = embeddings.embed_documents(texts)
-        print(f"✅ [Embeddings] Generated {len(vectors)} vectors")
+        print(f" [Embeddings] Generated {len(vectors)} vectors")
         return vectors
     
     except Exception as e:
-        print(f"❌ [Embeddings] Error: {str(e)}")
+        print(f" [Embeddings] Error: {str(e)}")
         raise
 
 

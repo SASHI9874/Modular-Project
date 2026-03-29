@@ -46,11 +46,11 @@ class DocsGenerator:
                     has_docker
                 )
             
-            print("✅ [DocsGen] README generated")
+            print(" [DocsGen] README generated")
             return readme
         
         except Exception as e:
-            print(f"⚠️  [DocsGen] LLM generation failed: {e}")
+            print(f"  [DocsGen] LLM generation failed: {e}")
             print("   Falling back to template generation...")
             # Fallback
             features_data = self._collect_feature_metadata(feature_keys)

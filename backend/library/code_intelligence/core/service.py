@@ -117,5 +117,5 @@ class CodeIntelligenceService:
         try:
             return operations[operation]()
         except Exception as e:
-            print(f"❌ [Intelligence] Error: {e}")
+            print(f" [Intelligence] Error: {e}")
             return {"result": str(e), "success": False, "error": str(e)}

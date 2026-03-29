@@ -26,7 +26,7 @@ class GeminiEmbeddings(Embeddings):
         # Official docs show plain model name
         self.model = model
 
-        print(f"✅ [GeminiEmbeddings] Initialized with model: {self.model}")
+        print(f" [GeminiEmbeddings] Initialized with model: {self.model}")
 
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
         try:
@@ -36,7 +36,7 @@ class GeminiEmbeddings(Embeddings):
             )
 
             # Official SDK returns result.embeddings
-            print("✅ [GeminiEmbeddings] Generated embeddings")
+            print(" [GeminiEmbeddings] Generated embeddings")
             return [embedding.values for embedding in result.embeddings]
 
         except Exception as e:

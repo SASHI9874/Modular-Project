@@ -35,11 +35,11 @@ class DockerGenerator:
             files['backend/.dockerignore'] = self._generate_dockerignore()
             files['frontend/.dockerignore'] = self._generate_dockerignore()
             
-            print(f"✅ [DockerGen] Generated {len(files)} Docker files")
+            print(f" [DockerGen] Generated {len(files)} Docker files")
             return files
         
         except Exception as e:
-            print(f"❌ [DockerGen] Error: {e}")
+            print(f" [DockerGen] Error: {e}")
             raise CodeGenerationError(f"Docker generation failed: {e}")
     
     def _detect_services(self, feature_keys: List[str]) -> Dict[str, bool]:

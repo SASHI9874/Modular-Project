@@ -13,7 +13,7 @@ async def cli_websocket(websocket: WebSocket):
     Handles bidirectional communication with terminal
     """
     await websocket.accept()
-    print("✅ CLI interface connected")
+    print(" CLI interface connected")
     
     try:
         while True:
@@ -33,7 +33,7 @@ async def cli_websocket(websocket: WebSocket):
             await websocket.send_text(json.dumps(response))
             
     except WebSocketDisconnect:
-        print("❌ CLI interface disconnected")
+        print(" CLI interface disconnected")
 
 
 @router.get("/cli/status")

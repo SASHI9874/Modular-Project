@@ -20,17 +20,17 @@ class CLIInterface:
         """Connect to backend WebSocket"""
         try:
             self.websocket = await websockets.connect(self.backend_url)
-            print("✅ Connected to agent backend")
+            print(" Connected to agent backend")
             print("Type your message and press Enter. Type 'exit' to quit.\n")
         except Exception as e:
-            print(f"❌ Failed to connect to backend: {e}")
+            print(f" Failed to connect to backend: {e}")
             print(f"Make sure backend is running on {self.backend_url}")
             sys.exit(1)
     
     async def send_message(self, message: str):
         """Send message to agent"""
         if not self.websocket:
-            print("❌ Not connected to backend")
+            print(" Not connected to backend")
             return
         
         data = {
@@ -50,7 +50,7 @@ class CLIInterface:
             data = json.loads(response)
             return data.get("content", "")
         except Exception as e:
-            print(f"❌ Error receiving response: {e}")
+            print(f" Error receiving response: {e}")
             return None
     
     async def run(self):

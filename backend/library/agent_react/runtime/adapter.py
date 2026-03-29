@@ -56,7 +56,7 @@ def run(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
     
     except Exception as e:
         import traceback
-        print(f"❌ [Agent] Error:")
+        print(f" [Agent] Error:")
         print(traceback.format_exc())
         
         return {

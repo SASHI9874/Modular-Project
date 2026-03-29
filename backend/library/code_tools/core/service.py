@@ -48,7 +48,7 @@ class CodeToolsService:
             with open(full_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            print(f"✅ [CodeTools] Read {len(content)} chars")
+            print(f" [CodeTools] Read {len(content)} chars")
             return content
         
         except Exception as e:
@@ -67,7 +67,7 @@ class CodeToolsService:
             with open(full_path, 'w', encoding='utf-8') as f:
                 f.write(content)
             
-            print(f"✅ [CodeTools] Wrote {len(content)} chars")
+            print(f" [CodeTools] Wrote {len(content)} chars")
             return f"File written: {path}"
         
         except Exception as e:
@@ -88,7 +88,7 @@ class CodeToolsService:
             
             if result.returncode == 0:
                 lines = result.stdout.strip().split('\n')
-                print(f"✅ [CodeTools] Found {len(lines)} matches")
+                print(f" [CodeTools] Found {len(lines)} matches")
                 return result.stdout.strip()
             else:
                 return "No matches found"
@@ -117,7 +117,7 @@ class CodeToolsService:
                 items.append(f"{item_type} {item.name}")
             
             result = "\n".join(items)
-            print(f"✅ [CodeTools] Listed {len(items)} items")
+            print(f" [CodeTools] Listed {len(items)} items")
             return result
         
         except Exception as e:
@@ -143,7 +143,7 @@ class CodeToolsService:
             )
             
             output = result.stdout + result.stderr
-            print(f"✅ [CodeTools] Exit code: {result.returncode}")
+            print(f" [CodeTools] Exit code: {result.returncode}")
             return output.strip()
         
         except subprocess.TimeoutExpired:
@@ -167,7 +167,7 @@ class CodeToolsService:
             if result.returncode == 0:
                 diff = result.stdout.strip()
                 if diff:
-                    print(f"✅ [CodeTools] Found changes")
+                    print(f" [CodeTools] Found changes")
                     return diff
                 else:
                     return "No uncommitted changes"
@@ -202,7 +202,7 @@ class CodeToolsService:
                 "success": True
             }
         except Exception as e:
-            print(f"❌ [CodeTools] Error: {e}")
+            print(f" [CodeTools] Error: {e}")
             return {
                 "result": str(e),
                 "success": False,

@@ -69,7 +69,7 @@ def run(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
     
     except Exception as e:
         import traceback
-        print(f"❌ [Runtime] Error:")
+        print(f" [Runtime] Error:")
         print(traceback.format_exc())
         
         return {

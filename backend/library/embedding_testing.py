@@ -65,4 +65,4 @@ result = run(
 
 print(f"Info: {result.get('info', {})}")
 
-print("\n✅ All adapter tests completed!")
+print("\n All adapter tests completed!")

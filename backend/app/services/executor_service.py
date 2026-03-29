@@ -55,7 +55,7 @@ class GraphExecutor:
                     tool_def['feature_key'] = feature_key
                     tools.append(tool_def)
                 else:
-                    print(f"⚠️ [Executor] Node '{feature_key}' is connected as a tool, but has no tool_definition in its spec!")
+                    print(f" [Executor] Node '{feature_key}' is connected as a tool, but has no tool_definition in its spec!")
         
         return tools
 
@@ -73,7 +73,7 @@ class GraphExecutor:
         tool_node_id = tool_def['node_id']
         feature_key = tool_def['feature_key']
         
-        print(f"   🔧 [Executor] Executing tool: {tool_name}")
+        print(f"    [Executor] Executing tool: {tool_name}")
         
         try:
             adapter_module = library_service.import_runtime_adapter(feature_key)
@@ -177,13 +177,13 @@ class GraphExecutor:
             
             # AGENT-SPECIFIC SETUP
             if is_agent:
-                print(f"   🤖 [Executor] Agent detected - setting up tools")
+                print(f"    [Executor] Agent detected - setting up tools")
                 
                 # Get connected tools
                 available_tools = self.get_connected_tools(node_id)
                 context['available_tools'] = available_tools
                 
-                print(f"   🔧 [Executor] Available tools: {[t['name'] for t in available_tools]}")
+                print(f"    [Executor] Available tools: {[t['name'] for t in available_tools]}")
                 
                 # Create LLM callable
                 llm_callable = self.create_llm_callable(node_id)
@@ -208,7 +208,7 @@ class GraphExecutor:
             output = {"error": f"Feature '{feature_key}' not found", "success": False}
         except Exception as e:
             import traceback
-            print(f"❌ [Executor] Error:")
+            print(f" [Executor] Error:")
             traceback.print_exc()
             output = {"error": str(e), "success": False}
 
@@ -225,7 +225,7 @@ class GraphExecutor:
         
         # Seed the Graph Memory
         if entry_node_id and initial_inputs:
-            print(f"🌱 [Executor] Seeding '{entry_node_id}' with payload: {initial_inputs}")
+            print(f" [Executor] Seeding '{entry_node_id}' with payload: {initial_inputs}")
             self.execution_state[entry_node_id] = initial_inputs
             results[entry_node_id] = initial_inputs
             
@@ -247,7 +247,7 @@ class GraphExecutor:
         for node_id in execution_order:
             # SKIP subordinate nodes! Let the Agent orchestrate them.
             if node_id in subordinate_nodes:
-                print(f"⏭️  [Executor] Skipping '{node_id}' (Orchestrated by Agent)")
+                print(f"  [Executor] Skipping '{node_id}' (Orchestrated by Agent)")
                 continue
                 
             results[node_id] = self.execute_node(node_id)

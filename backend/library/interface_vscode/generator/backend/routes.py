@@ -21,7 +21,7 @@ async def vscode_websocket(websocket: WebSocket):
     Handles bidirectional communication
     """
     await websocket.accept()
-    print("✅ VS Code extension connected")
+    print(" VS Code extension connected")
     
     try:
         while True:
@@ -42,7 +42,7 @@ async def vscode_websocket(websocket: WebSocket):
             await websocket.send_text(json.dumps(response))
             
     except WebSocketDisconnect:
-        print("❌ VS Code extension disconnected")
+        print(" VS Code extension disconnected")
 
 
 @router.get("/vscode/status")

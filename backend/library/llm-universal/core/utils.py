@@ -54,7 +54,7 @@ def with_retries(max_attempts: int = 3, min_seconds: int = 1, max_seconds: int =
                     # Jitter: Add random noise to prevent "Thundering Herd" problem
                     sleep_time += random.uniform(0, 1)
                     
-                    print(f"⚠️ [LLM Retry] Attempt {attempt}/{max_attempts} failed: {str(e)}. Retrying in {sleep_time:.2f}s...")
+                    print(f" [LLM Retry] Attempt {attempt}/{max_attempts} failed: {str(e)}. Retrying in {sleep_time:.2f}s...")
                     time.sleep(sleep_time)
                     attempt += 1
                 
@@ -92,7 +92,7 @@ def with_stream_retry(max_attempts: int = 3):
                         raise e
                     
                     sleep_time = min(10, 2 ** (attempt - 1))
-                    print(f"⚠️ [Stream Retry] Attempt {attempt}/{max_attempts} failed. Retrying in {sleep_time:.2f}s...")
+                    print(f" [Stream Retry] Attempt {attempt}/{max_attempts} failed. Retrying in {sleep_time:.2f}s...")
                     time.sleep(sleep_time)
                     attempt += 1
                 

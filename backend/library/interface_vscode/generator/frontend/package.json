@@ -16,16 +16,28 @@
     "categories": [
         "Other"
     ],
-    "activationEvents": [
-        "onStartupFinished"
-    ],
+    "activationEvents": [],
     "main": "./out/extension.js",
     "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "aiAgent-sidebar",
+                    "title": "AI Agent",
+                    "icon": "icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "aiAgent-sidebar": [
+                {
+                    "type": "webview",
+                    "id": "aiAgent.chatView",
+                    "name": "Chat"
+                }
+            ]
+        },
         "commands": [
-            {
-                "command": "aiAgent.chat",
-                "title": "AI Agent: Open Chat"
-            },
             {
                 "command": "aiAgent.explainCode",
                 "title": "AI Agent: Explain Selected Code"

@@ -165,9 +165,9 @@ async def download_app(request: DownloadRequest):
     Traditional synchronous download (no progress)
     """
     try:
-        from app.services.packager.packager_service import PackagerServiceV2
+        from app.services.packager.packager_service import PackagerService
         
-        packager = PackagerServiceV2(
+        packager = PackagerService(
             graph_data=request.graph,
             project_name=request.project_name
         )
@@ -188,68 +188,84 @@ async def download_app(request: DownloadRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+# @router.post("/{project_id}/download")  # ✅ Match existing route
+# async def download_app(project_id: int, request: DownloadRequest):
+#     """
+#     Traditional synchronous download (no progress)
+#     """
+#     try:
+#         from app.services.packager.packager_service import PackagerService
+        
+#         packager = PackagerService(
+#             graph_data=request.graph,
+#             project_name=request.project_name
+#         )
+        
+#         zip_bytes = packager.create_package()
+        
+#         filename = f"{request.project_name.replace(' ', '-').lower()}.zip"
+        
+#         return Response(
+#             content=zip_bytes,
+#             media_type="application/zip",
+#             headers={
+#                 "Content-Disposition": f"attachment; filename={filename}"
+#             }
+#         )
+    
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/{project_id}/download/stream")
-async def download_with_progress(request: DownloadRequest):
+async def download_with_progress(project_id: int, request: DownloadRequest):
     """
     Download with Server-Sent Events (SSE) progress updates
-    
-    Client receives events like:
-    data: {"step": "validation", "progress": 10, "message": "Validating..."}
-    data: {"step": "complete", "progress": 100, "download_id": "abc-123"}
-    
-    Then client calls GET /download/{download_id} to get ZIP
     """
-    from app.services.packager.packager_service import PackagerServiceV2
+    # from app.services.packager.packager_service import PackagerService
     
     download_id = str(uuid.uuid4())
     
     async def event_generator():
         try:
-            packager = PackagerServiceV2(
+            packager = PackagerService(
                 graph_data=request.graph,
                 project_name=request.project_name
             )
             
-            # Stream progress events
             generator = packager.create_package_streaming()
             zip_bytes = None
             
-            for event in generator:
-                # Send progress event to client
-                yield f"data: {json.dumps(event)}\n\n"
-                
-                # Wait a bit for smooth UI updates
-                await asyncio.sleep(0.1)
+            # We use a While loop so we can manually catch the StopIteration 
+            # that contains the 'return' value.
+            while True:
+                try:
+                    # Use next() to get the next 'yield'
+                    event = next(generator)
+                    yield f"data: {json.dumps(event)}\n\n"
+                    await asyncio.sleep(0.05)
+                except StopIteration as e:
+                    # This 'e.value' IS the zip_bytes from the 'return' statement
+                    zip_bytes = e.value
+                    break # Exit loop, we are done
             
-            # Get the returned ZIP bytes from generator
-            try:
-                zip_bytes = generator.send(None)  # Get return value
-            except StopIteration as e:
-                zip_bytes = e.value  # Python generators return via StopIteration.value
-            
-            # Store ZIP for download
             if zip_bytes:
                 pending_downloads[download_id] = zip_bytes
-                
-                # Send final event with download ID
                 final_event = {
                     "step": "download_ready",
                     "progress": 100,
                     "download_id": download_id,
-                    "size_mb": len(zip_bytes) / (1024 * 1024)
+                    "size_mb": round(len(zip_bytes) / (1024 * 1024), 2)
                 }
                 yield f"data: {json.dumps(final_event)}\n\n"
             else:
-                error_event = {"step": "error", "message": "Failed to generate package"}
-                yield f"data: {json.dumps(error_event)}\n\n"
-        
+                # If zip_bytes is None, the Service probably didn't 'return' it
+                yield f"data: {json.dumps({'step': 'error', 'message': 'ZIP generation failed to return data'})}\n\n"
+
         except Exception as e:
-            error_event = {
-                "step": "error",
-                "progress": 0,
-                "message": f"Error: {str(e)}"
-            }
-            yield f"data: {json.dumps(error_event)}\n\n"
+            # logging.error(traceback.format_exc())
+            yield f"data: {json.dumps({'step': 'error', 'message': str(e)})}\n\n"
     
     return StreamingResponse(
         event_generator(),
@@ -257,13 +273,13 @@ async def download_with_progress(request: DownloadRequest):
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",  # Disable nginx buffering
+            "X-Accel-Buffering": "no",
         }
     )
 
 
-@router.get("/download/{download_id}")
-async def get_download(download_id: str):
+@router.get("/{project_id}/download/{download_id}")
+async def get_download(project_id: int, download_id: str):
     """
     Download the prepared ZIP file
     """
@@ -287,8 +303,8 @@ async def get_download(download_id: str):
     )
 
 
-@router.delete("/download/{download_id}")
-async def cancel_download(download_id: str):
+@router.delete("/{project_id}/download/{download_id}")
+async def cancel_download(project_id: int, download_id: str):
     """Cancel/cleanup a download"""
     if download_id in pending_downloads:
         del pending_downloads[download_id]

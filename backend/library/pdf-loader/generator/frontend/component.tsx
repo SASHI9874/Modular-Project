@@ -18,14 +18,14 @@ export default function PdfLoaderWidget() {
 
     try {
       const response = await (api as any)["pdf-loader"].upload(file);
-      setStatus(`✅ Success`);
+      setStatus(` Success`);
 
       // Save the result to the Global Store so other components can use it
       if (set_pdfloader_file_text && response.preview) {
         set_pdfloader_file_text(response.preview);
       }
     } catch (err) {
-      setStatus("❌ Upload failed");
+      setStatus(" Upload failed");
       console.error(err);
     }
   };

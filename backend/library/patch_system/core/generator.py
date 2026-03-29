@@ -26,5 +26,5 @@ class PatchGenerator:
         if not patch:
             return "No changes detected"
         
-        print(f"✅ [PatchGen] Generated {len(patch)} chars")
+        print(f" [PatchGen] Generated {len(patch)} chars")
         return patch

@@ -75,7 +75,7 @@ export default function UniversalLlmWidget() {
       if (err.name !== "AbortError") {
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: "⚠️ Error: Connection failed." },
+          { role: "assistant", content: " Error: Connection failed." },
         ]);
       }
     } finally {

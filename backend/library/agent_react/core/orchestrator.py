@@ -23,7 +23,7 @@ class AgentOrchestrator:
     
     def run(self, message: str) -> Dict[str, Any]:
         """Execute agent loop"""
-        print(f"🤖 [Agent] Starting with message: {message[:50]}...")
+        print(f" [Agent] Starting with message: {message[:50]}...")
         
         conversation = [
             {"role": "system", "content": self.system_prompt},
@@ -40,7 +40,7 @@ class AgentOrchestrator:
                 response = self.llm_callable(conversation)
                 response_text = response.get("content", "")
             except Exception as e:
-                print(f"❌ [Agent] LLM call failed: {e}")
+                print(f" [Agent] LLM call failed: {e}")
                 return {
                     "response": f"Error: LLM call failed - {str(e)}",
                     "tool_calls_made": tool_calls_made,
@@ -54,7 +54,7 @@ class AgentOrchestrator:
             final_answer = self._parse_final_answer(response_text)
             
             if final_answer:
-                print(f"✅ [Agent]  {final_answer[:50]}...")
+                print(f" [Agent]  {final_answer[:50]}...")
                 return {
                     "response": final_answer,
                     "tool_calls_made": tool_calls_made,
@@ -69,7 +69,7 @@ class AgentOrchestrator:
                 tool_name = tool_call['tool']
                 tool_args = tool_call['args']
                 
-                print(f"🔧 [Agent] Calling tool: {tool_name} with {tool_args}")
+                print(f" [Agent] Calling tool: {tool_name} with {tool_args}")
                 
                 tool_result = self._execute_tool(tool_name, tool_args)
                 tool_calls_made.append({
@@ -90,7 +90,7 @@ class AgentOrchestrator:
             
             # --- IF NEITHER, THE LLM IS CONFUSED ---
             # No tool call or answer found - nudge the LLM to follow the format
-            print("⚠️  [Agent] No valid tool call or final answer found in response.")
+            print("  [Agent] No valid tool call or final answer found in response.")
             conversation.append({"role": "assistant", "content": response_text})
             conversation.append({
                 "role": "user", 
@@ -119,7 +119,7 @@ class AgentOrchestrator:
                 try:
                     args = json.loads(args_match.group(1))
                 except Exception as e:
-                    print(f"⚠️  [Agent] Failed to parse args: {e}")
+                    print(f"  [Agent] Failed to parse args: {e}")
             
             return {"tool": tool_name, "args": args}
         

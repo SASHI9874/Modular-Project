@@ -8,20 +8,30 @@ import { useBuilderStore } from "@/core/store/useBuilderStore";
 import ExecutionResultsPanel from "@/components/features/canvas/ExecutionResultsPanel";
 import { apiClient } from "@/core/api/client";
 import { Play, Loader2, X, Code, Download } from "lucide-react";
+import DownloadProgressModal from "@/services/DownloadProgressModal";
 
 function BuilderContent() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { project, toObject, getNodes } = useReactFlow();
   const { addNode, setExecutionResults, executionResults } = useBuilderStore();
 
+  // --- UI STATE ---
   const [isRunning, setIsRunning] = useState(false);
   const [showCode, setShowCode] = useState(false);
   const [compiledCode, setCompiledCode] = useState("");
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false); // Used for legacy download button
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [savedProjectId, setSavedProjectId] = useState<string | null>(null);
 
   // Modal State
   const [showRunModal, setShowRunModal] = useState(false);
 
+  // --- HANDLERS ---
+
+  /**
+   * Saves the current flow to the backend.
+   * Updates savedProjectId so other modals can reference the most recent version.
+   */
   const handleSave = async () => {
     try {
       const graphData = toObject();
@@ -29,8 +39,13 @@ function BuilderContent() {
         name: `Project ${new Date().toLocaleString()}`,
         graph: graphData,
       });
-      console.log(`Saved! Project ID: ${response.data.id}`);
-      return response.data.id;
+
+      const newId = response.data.id.toString();
+      console.log(`Saved! Project ID: ${newId}`);
+
+      // Update state so the rest of the app knows the current Project ID
+      setSavedProjectId(newId);
+      return newId;
     } catch (e) {
       console.error(e);
       alert("Failed to save project");
@@ -38,22 +53,32 @@ function BuilderContent() {
     }
   };
 
-  // UPDATED: handleRun now accepts the dynamic payload from the modal
+  /**
+   * Triggers the Streaming Download Modal
+   */
+  const handleDownloadWithProgress = async () => {
+    // 1. Ensure project is saved first to get a valid ID
+    const projectId = await handleSave();
+
+    if (projectId) {
+      // 2. Open the modal (The modal handles the SSE connection)
+      setShowDownloadModal(true);
+    }
+  };
+
   const handleRun = async (runConfig: {
     entry_node_id?: string;
     payload: Record<string, any>;
   }) => {
     setIsRunning(true);
-    setShowRunModal(false); // Close the modal
-    setShowCode(false); // Close code preview if it was open
-    setExecutionResults(null); // Clear previous results
+    setShowRunModal(false);
+    setShowCode(false);
+    setExecutionResults(null);
 
-    // Auto-save first
     const projectId = await handleSave();
 
     if (projectId) {
       try {
-        // Pass the highly specific trigger ID and payload to the backend
         const { data } = await apiClient.post(`/projects/${projectId}/run`, {
           entry_node_id: runConfig.entry_node_id,
           inputs: runConfig.payload,
@@ -117,54 +142,33 @@ function BuilderContent() {
     }
   };
 
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    const projectId = await handleSave();
-    if (!projectId) {
-      setIsDownloading(false);
-      return;
-    }
-
-    try {
-      const response = await apiClient.get(`/projects/${projectId}/download`, {
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `ai-app-${projectId}.zip`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (e) {
-      console.error(e);
-      alert("Download failed. Check backend logs.");
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden bg-blue-900">
+    <div className="h-screen w-screen flex flex-col overflow-hidden bg-slate-900">
       {/* Header */}
-      <header className="h-14 border-b flex items-center px-4 bg-gray-200 z-10 shrink-0">
-        <h1 className="font-bold text-lg text-gray-900">AI Builder</h1>
-        <div className="ml-auto flex gap-2">
+      <header className="h-14 border-b flex items-center px-6 bg-white z-10 shrink-0 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <Code className="text-white w-5 h-5" />
+          </div>
+          <h1 className="font-bold text-lg text-gray-900 tracking-tight">
+            AI Builder
+          </h1>
+        </div>
+
+        <div className="ml-auto flex gap-3">
           <button
             type="button"
             onClick={handleSave}
-            className="bg-black text-white px-4 py-2 rounded text-sm hover:bg-gray-800 transition-colors"
+            className="bg-gray-100 text-gray-700 font-semibold px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-all"
           >
             Save Flow
           </button>
 
-          {/* Main Run Button opens the Modal */}
           <button
             type="button"
             onClick={() => setShowRunModal(true)}
             disabled={isRunning}
-            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 transition-colors"
+            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2 disabled:opacity-50 transition-all shadow-md shadow-blue-100"
           >
             {isRunning ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -177,21 +181,18 @@ function BuilderContent() {
           <button
             type="button"
             onClick={handleCompile}
-            className="text-gray-600 px-4 py-2 rounded border border-gray-300 text-sm hover:bg-gray-100 font-medium flex items-center gap-2 transition-colors"
+            className="text-gray-600 px-4 py-2 rounded-lg border border-gray-200 text-sm hover:bg-gray-50 font-semibold flex items-center gap-2 transition-all"
           >
             <Code className="w-4 h-4" />
             View Code
           </button>
+
           <button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className="text-gray-600 px-4 py-2 rounded border border-gray-300 text-sm hover:bg-gray-100 font-medium flex items-center gap-2 disabled:opacity-50 transition-colors"
+            type="button"
+            onClick={handleDownloadWithProgress}
+            className="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg text-sm hover:bg-emerald-700 flex items-center gap-2 transition-all shadow-md shadow-emerald-100"
           >
-            {isDownloading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Download className="w-4 h-4" />
-            )}
+            <Download className="w-4 h-4" />
             Download App
           </button>
         </div>
@@ -201,7 +202,7 @@ function BuilderContent() {
       <div className="flex-1 flex overflow-hidden">
         <Sidebar />
         <div
-          className="flex-1 h-full relative bg-gray-100"
+          className="flex-1 h-full relative bg-gray-50"
           ref={reactFlowWrapper}
         >
           <div
@@ -214,47 +215,61 @@ function BuilderContent() {
         </div>
       </div>
 
-      {/* NEW DYNAMIC RUN MODAL */}
+      {/* --- MODALS & OVERLAYS --- */}
+
+      {/* RUN CONFIG MODAL */}
       <RunWorkflowModal
         isOpen={showRunModal}
         onClose={() => setShowRunModal(false)}
         onRun={handleRun}
-        nodes={getNodes()} // Pass canvas nodes so the modal can introspect triggers
+        nodes={getNodes()}
       />
 
-      {/* RESULTS PANEL */}
+      {/* EXECUTION RESULTS PANEL */}
       <ExecutionResultsPanel
         results={executionResults}
         onClose={() => setExecutionResults(null)}
       />
 
+      {/* STREAMING DOWNLOAD MODAL */}
+      {showDownloadModal && savedProjectId && (
+        <DownloadProgressModal
+          isOpen={showDownloadModal}
+          onClose={() => setShowDownloadModal(false)}
+          projectId={savedProjectId}
+          projectName={`AI-App-${savedProjectId}`}
+          graphData={toObject()}
+        />
+      )}
+
       {/* CODE PREVIEW MODAL */}
       {showCode && (
-        <div className="absolute inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm">
-          <div className="bg-gray-800 w-2/3 h-3/4 rounded-xl shadow-2xl flex flex-col overflow-hidden">
-            <div className="bg-gray-100 px-4 py-3 border-b flex justify-between items-center">
-              <span className="font-bold text-gray-700">
-                Generated Python Code
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm p-10">
+          <div className="bg-gray-900 w-full max-w-5xl h-full rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-700">
+            <div className="bg-gray-800 px-6 py-4 border-b border-gray-700 flex justify-between items-center">
+              <span className="font-bold text-gray-200 flex items-center gap-2">
+                <Code className="w-4 h-4 text-blue-400" />
+                Generated Python Source
               </span>
 
               <div className="flex gap-4 items-center">
-                {/* This button also opens the Run Modal! */}
                 <button
                   onClick={() => setShowRunModal(true)}
-                  className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center gap-2 transition-colors"
                 >
                   <Play className="w-4 h-4 fill-current" />
-                  Run Flow
+                  Run Now
                 </button>
-                <button onClick={() => setShowCode(false)}>
-                  <X className="w-5 h-5 text-gray-500 hover:text-red-500 transition-colors" />
+                <button
+                  onClick={() => setShowCode(false)}
+                  className="p-1 hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6 text-gray-400 hover:text-white" />
                 </button>
               </div>
             </div>
-            <div className="flex-1 overflow-auto bg-[#1e1e1e] p-4">
-              <pre className="text-sm font-mono text-green-400">
-                {compiledCode}
-              </pre>
+            <div className="flex-1 overflow-auto bg-[#1e1e1e] p-6 font-mono text-sm leading-relaxed">
+              <pre className="text-emerald-400">{compiledCode}</pre>
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ class CodeIndexer:
                 index['extensions'][ext] = index['extensions'].get(ext, 0) + 1
             
             except Exception as e:
-                print(f"⚠️  [Indexer] Skip {file_path}: {e}")
+                print(f"  [Indexer] Skip {file_path}: {e}")
         
-        print(f"✅ [Indexer] Indexed {len(index['files'])} files")
+        print(f" [Indexer] Indexed {len(index['files'])} files")
         return index

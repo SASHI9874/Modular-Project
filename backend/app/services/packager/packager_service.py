@@ -424,7 +424,7 @@
 
 
 import re
-from typing import Dict, Any
+from typing import Dict, Any, Generator
 
 from app.services.library_service import library_service
 from .analyzer import GraphAnalyzer, DependencyResolver, ModeDetector
@@ -613,6 +613,146 @@ class PackagerService:
             print(f"\n Unexpected error: {e}")
             raise PackagerError(f"Packaging failed: {e}")
     
+    def create_package_streaming(self) -> Generator[Dict[str, Any], None, bytes]:
+        """
+        Stream progress events during package generation
+        
+        Yields progress events, returns final ZIP bytes
+        """
+        yield {"step": "validation", "progress": 5, "message": "Validating graph..."}
+        
+        try:
+            # Step 1: Validate
+            is_valid, errors = self.validator.validate()
+            if not is_valid:
+                yield {"step": "error", "progress": 0, "message": f"Validation failed: {'; '.join(errors)}"}
+                raise PackagerError(f"Validation failed: {'; '.join(errors)}")
+            
+            yield {"step": "validation", "progress": 10, "message": " Graph validated"}
+            
+            # Step 2: Analyze
+            yield {"step": "analysis", "progress": 15, "message": "Analyzing graph structure..."}
+            runtime_nodes = self.analyzer.filter_runtime_nodes()
+            used_keys = self.analyzer.get_used_feature_keys(runtime_nodes)
+            execution_mode = self.analyzer.detect_execution_mode()
+            yield {"step": "analysis", "progress": 20, "message": f" Found {len(runtime_nodes)} runtime nodes"}
+            
+            # Step 3: Dependencies
+            yield {"step": "dependencies", "progress": 25, "message": "Resolving dependencies..."}
+            resolved_keys = self.dependency_resolver.resolve(used_keys)
+            yield {"step": "dependencies", "progress": 30, "message": f" Resolved {len(resolved_keys)} features"}
+            
+            # Step 4: Frontend mode
+            yield {"step": "mode_detection", "progress": 35, "message": "Detecting frontend mode..."}
+            mode_detector = ModeDetector(runtime_nodes)
+            frontend_mode = mode_detector.detect_frontend_mode()
+            yield {"step": "mode_detection", "progress": 40, "message": f" Mode: {frontend_mode}"}
+            
+            # Step 5: Backend
+            yield {"step": "backend", "progress": 45, "message": "Generating backend code..."}
+            backend_files = self.backend_gen.generate(resolved_keys)
+            yield {"step": "backend", "progress": 55, "message": f" Generated {len(backend_files)} backend files"}
+            
+            # Step 6: Frontend
+            yield {"step": "frontend", "progress": 60, "message": "Generating frontend..."}
+            frontend_files = self.frontend_gen.generate(resolved_keys, frontend_mode)
+            yield {"step": "frontend", "progress": 65, "message": f" Generated {len(frontend_files)} frontend files"}
+            
+            # Step 6.5: Extension
+            vsix_bytes = None
+            vsix_filename = None
+            if frontend_mode == 'external_extension':
+                yield {"step": "extension", "progress": 70, "message": "Compiling VS Code extension..."}
+                
+                # Find VS Code feature
+                vscode_feature_key = None
+                vscode_feature_name = "vscode-agent"
+                vscode_version = "1.0.0"
+                
+                for key in resolved_keys:
+                    if 'vscode' in key.lower():
+                        vscode_feature_key = key
+                        from app.services.library_service import library_service
+                        manifest = library_service.get_feature(key)
+                        if manifest:
+                            vscode_feature_name = manifest.name
+                            vscode_version = manifest.version
+                        break
+                
+                extension_source = self.extension_compiler.generate_extension_source(resolved_keys)
+                
+                if extension_source:
+                    vsix_bytes = self.extension_compiler.compile_vscode_extension(
+                        extension_source,
+                        backend_url="ws://localhost:8000",
+                        feature_key=vscode_feature_key or "interface-vscode",
+                        feature_version=vscode_version
+                    )
+                    
+                    if vsix_bytes:
+                        safe_name = sanitize_filename(vscode_feature_name)
+                        vsix_filename = f"{safe_name}-v{vscode_version}.vsix"
+                        yield {"step": "extension", "progress": 75, "message": f" Extension compiled: {vsix_filename}"}
+                    else:
+                        yield {"step": "extension", "progress": 75, "message": " Extension compilation failed"}
+                else:
+                    yield {"step": "extension", "progress": 75, "message": " No extension to compile"}
+            
+            # Step 7: Environment
+            yield {"step": "environment", "progress": 80, "message": "Generating environment files..."}
+            env_files = self.env_gen.generate(resolved_keys)
+            yield {"step": "environment", "progress": 82, "message": " Environment files created"}
+            
+            # Step 8: Docker
+            yield {"step": "docker", "progress": 84, "message": "Generating Docker configuration..."}
+            docker_files = self.docker_gen.generate(resolved_keys)
+            yield {"step": "docker", "progress": 86, "message": " Docker files created"}
+            
+            # Step 9: Documentation
+            try:
+                yield {"step": "documentation", "progress": 88, "message": "Generating README with AI..."}
+                readme = self.docs_gen.generate_readme(resolved_keys, execution_mode, frontend_mode, has_docker=True)
+                yield {"step": "documentation", "progress": 92, "message": " README generated"}
+            except Exception as e:
+                # FALLBACK: If llm failed use a basic template instead of crashing
+                print(f"AI Documentation failed: {e}")
+                readme = self._generate_readme_fallback(execution_mode, frontend_mode)
+                yield {"step": "documentation", "progress": 92, "message": " README prepared (Fallback used)"}
+
+            # Step 10: Install scripts
+            yield {"step": "install_scripts", "progress": 94, "message": "Creating install scripts..."}
+            extension_name = vsix_filename if vsix_bytes and vsix_filename else None
+            install_scripts = self.install_scripts_gen.generate(
+                has_frontend=(frontend_mode == 'generated_ui'),
+                has_extension=(vsix_bytes is not None),
+                extension_name=extension_name
+            )
+            yield {"step": "install_scripts", "progress": 96, "message": " Install scripts created"}
+            
+            # Step 11: Bundle
+            yield {"step": "bundling", "progress": 98, "message": "Creating ZIP package..."}
+            all_files = {
+                **backend_files,
+                **frontend_files,
+                **env_files,
+                **docker_files,
+                **install_scripts,
+                'README.md': readme
+            }
+            
+            if vsix_bytes and vsix_filename:
+                all_files[vsix_filename] = vsix_bytes
+            
+            zip_bytes = self.bundler.create_zip(all_files)
+            
+            yield {"step": "complete", "progress": 100, "message": f" Package ready ({len(zip_bytes) / (1024*1024):.2f} MB)"}
+            
+            return zip_bytes
+        
+        except Exception as e:
+            yield {"step": "error", "progress": 0, "message": f" Error: {str(e)}"}
+            raise
+
     def _generate_readme(self, execution_mode: str, frontend_mode: str) -> str:
         """Generate basic README"""
         return f"""# {self.project_name}

@@ -47,7 +47,7 @@ def run(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
             model_name=model_name,
             temperature=temperature
         )
-        print(f"✅ [Gemini Adapter] Received response successfully.")
+        print(f" [Gemini Adapter] Received response successfully.")
         return {
             "success": True,
             "response": answer
@@ -55,7 +55,7 @@ def run(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
         
     except Exception as e:
         error_str = str(e).lower()
-        print(f"❌ [Gemini Adapter] API Error: {error_str}")
+        print(f" [Gemini Adapter] API Error: {error_str}")
         return {
             "success": False,
             "response": f"Gemini API Error: {str(e)}"

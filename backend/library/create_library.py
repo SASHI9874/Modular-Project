@@ -44,10 +44,10 @@ def create_library_structure(library_name: str):
             file_path.touch(exist_ok=True)
             print(f"📄 Created: {file}")
 
-        print(f"\n✅ Success! '{library_name}' is ready at: {base_path}")
+        print(f"\n Success! '{library_name}' is ready at: {base_path}")
 
     except Exception as e:
-        print(f"\n❌ An error occurred: {e}")
+        print(f"\n An error occurred: {e}")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

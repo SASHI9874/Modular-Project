@@ -19,7 +19,7 @@ def pdf_loader(inputs: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 def gpt_4(inputs: Dict[str, Any]) -> Dict[str, Any]:
-    print(f"[{time.strftime('%X')}] 🤖 Querying GPT-4...")
+    print(f"[{time.strftime('%X')}]  Querying GPT-4...")
     context = inputs.get("context", "")
     if isinstance(context, dict):
         context = context.get("text", str(context))
@@ -61,7 +61,7 @@ def main():
     state["{{ node.id }}"] = {}
     {% endif %}
     
-    print(f"✅ Finished {{ node.label }}")
+    print(f" Finished {{ node.label }}")
     print("-" * 30)
     {% endfor %}
 

@@ -27,6 +27,6 @@ class SemanticSearch:
         results.sort(key=lambda x: x[1], reverse=True)
         
         matched = [path for path, score in results[:max_results]]
-        print(f"✅ [Search] Found {len(matched)} files")
+        print(f" [Search] Found {len(matched)} files")
         
         return matched

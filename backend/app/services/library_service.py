@@ -22,7 +22,7 @@ class LibraryService:
         self.features = {} # Reset
         print("library path ",self.library_path)
         if not os.path.exists(self.library_path):
-            print(f"❌ Library path not found: {self.library_path}")
+            print(f" Library path not found: {self.library_path}")
             return
 
         for folder_name in os.listdir(self.library_path):
@@ -40,10 +40,10 @@ class LibraryService:
                     manifest.base_path = folder_path
                     
                     self.features[manifest.key] = manifest
-                    print(f"   ✅ Loaded: {manifest.name} ({manifest.key})")
+                    print(f"    Loaded: {manifest.name} ({manifest.key})")
                     
                 except Exception as e:
-                    print(f"   ❌ Error loading {folder_name}: {e}")
+                    print(f"    Error loading {folder_name}: {e}")
 
     def get_feature(self, key: str) -> Optional[FeatureManifest]:
         return self.features.get(key)
@@ -91,12 +91,12 @@ class LibraryService:
         try:
             spec.loader.exec_module(module)
         except Exception:
-            print(f"🔥 Error loading runtime adapter: {module_name}")
+            print(f" Error loading runtime adapter: {module_name}")
             traceback.print_exc()
             del sys.modules[module_name]  # cleanup broken module
             raise
 
-        print(f"✅ Loaded runtime adapter: {module_name}")
+        print(f" Loaded runtime adapter: {module_name}")
         return module
 
 

@@ -1,9 +1,9 @@
 {
     "key": "interface_vscode",
     "name": "VS Code",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "VS Code extension interface for coding agents",
-    "min_platform_version": "0.1.0",
+    "min_platform_version": "0.1.1",
     "classification": {
         "capability": "interface",
         "execution_model": "async",

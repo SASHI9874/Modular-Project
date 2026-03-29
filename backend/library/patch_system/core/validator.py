@@ -23,7 +23,7 @@ class PatchValidator:
         
         for pattern, reason in dangerous:
             if re.search(pattern, patch, re.IGNORECASE):
-                issues.append(f"⚠️  {reason}")
+                issues.append(f"  {reason}")
         
         # Check patch format
         if not patch.startswith('---'):
@@ -32,9 +32,9 @@ class PatchValidator:
         is_safe = len(issues) == 0
         
         if is_safe:
-            print(f"✅ [PatchVal] Patch is safe")
+            print(f" [PatchVal] Patch is safe")
         else:
-            print(f"⚠️  [PatchVal] Found {len(issues)} issues")
+            print(f"  [PatchVal] Found {len(issues)} issues")
         
         return {
             "safe": is_safe,

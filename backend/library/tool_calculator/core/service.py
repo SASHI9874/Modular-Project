@@ -78,7 +78,7 @@ def calculate(expression: str) -> dict:
     try:
         result = safe_eval(expression)
         
-        print(f"✅ [Calculator] Result: {result}")
+        print(f" [Calculator] Result: {result}")
         
         return {
             "result": result,
@@ -87,7 +87,7 @@ def calculate(expression: str) -> dict:
         }
     
     except Exception as e:
-        print(f"❌ [Calculator] Error: {str(e)}")
+        print(f" [Calculator] Error: {str(e)}")
         
         return {
             "result": None,

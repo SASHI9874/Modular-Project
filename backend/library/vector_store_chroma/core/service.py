@@ -31,7 +31,7 @@ def _get_embeddings():
                 return get_embeddings_model()
             except ImportError:
                 raise ImportError(
-                    "❌ embeddings-universal feature not found. "
+                    " embeddings-universal feature not found. "
                     "Make sure it's included in your workflow and properly configured."
                 )
 
@@ -214,12 +214,12 @@ def index_documents(
             "provider": current_provider
         }
         
-        print(f"✅ [VectorStore] Indexed {len(docs)} chunks successfully")
+        print(f" [VectorStore] Indexed {len(docs)} chunks successfully")
         
         return result
     
     except Exception as e:
-        print(f"❌ [VectorStore] Indexing error: {str(e)}")
+        print(f" [VectorStore] Indexing error: {str(e)}")
         raise VectorStoreError(f"Failed to index documents: {str(e)}")
 
 
@@ -284,14 +284,14 @@ def retrieve_context(
             scores = [None] * len(docs)
         
         if not docs:
-            print(f"⚠️  [VectorStore] No results found")
+            print(f"  [VectorStore] No results found")
             return {
                 "context": "",
                 "num_results": 0,
                 "sources": []
             }
         
-        print(f"✅ [VectorStore] Found {len(docs)} relevant chunks")
+        print(f" [VectorStore] Found {len(docs)} relevant chunks")
         
         # Format results
         context_parts = []
@@ -329,7 +329,7 @@ def retrieve_context(
     except CollectionNotFoundError:
         raise
     except Exception as e:
-        print(f"❌ [VectorStore] Retrieval error: {str(e)}")
+        print(f" [VectorStore] Retrieval error: {str(e)}")
         raise VectorStoreError(f"Failed to retrieve context: {str(e)}")
 
 
@@ -356,7 +356,7 @@ def list_collections() -> List[str]:
         return collections
     
     except Exception as e:
-        print(f"❌ [VectorStore] Error listing collections: {str(e)}")
+        print(f" [VectorStore] Error listing collections: {str(e)}")
         return []
 
 
@@ -370,11 +370,11 @@ def delete_collection(collection_name: str) -> bool:
             print(f"🗑️  [VectorStore] Deleted collection: {collection_name}")
             return True
         else:
-            print(f"⚠️  [VectorStore] Collection not found: {collection_name}")
+            print(f"  [VectorStore] Collection not found: {collection_name}")
             return False
     
     except Exception as e:
-        print(f"❌ [VectorStore] Error deleting collection: {str(e)}")
+        print(f" [VectorStore] Error deleting collection: {str(e)}")
         raise VectorStoreError(f"Failed to delete collection: {str(e)}")
 
 
@@ -428,7 +428,7 @@ def get_collection_stats(collection_name: str) -> Dict[str, Any]:
     except CollectionNotFoundError:
         raise
     except Exception as e:
-        print(f"❌ [VectorStore] Error getting stats: {str(e)}")
+        print(f" [VectorStore] Error getting stats: {str(e)}")
         raise VectorStoreError(f"Failed to get collection stats: {str(e)}")
 
 
@@ -469,7 +469,7 @@ def process(
             )
             
             return {
-                "result": f"✅ Indexed {result['chunks_indexed']} chunks into '{collection_name}'",
+                "result": f" Indexed {result['chunks_indexed']} chunks into '{collection_name}'",
                 "metadata": result
             }
         
@@ -503,7 +503,7 @@ def process(
         elif operation == "delete":
             success = delete_collection(collection_name)
             return {
-                "result": f"✅ Deleted collection '{collection_name}'" if success else f"⚠️ Collection '{collection_name}' not found",
+                "result": f" Deleted collection '{collection_name}'" if success else f" Collection '{collection_name}' not found",
                 "metadata": {"deleted": success}
             }
         
@@ -519,16 +519,16 @@ def process(
     
     except (VectorStoreError, InvalidOperationError, CollectionNotFoundError, EmbeddingMismatchError) as e:
         return {
-            "result": f"❌ Error: {str(e)}",
+            "result": f" Error: {str(e)}",
             "metadata": {"error": str(e), "error_type": type(e).__name__}
         }
     
     except Exception as e:
-        print(f"❌ [VectorStore] Unexpected error: {str(e)}")
+        print(f" [VectorStore] Unexpected error: {str(e)}")
         import traceback
         traceback.print_exc()
         
         return {
-            "result": f"❌ Unexpected error: {str(e)}",
+            "result": f" Unexpected error: {str(e)}",
             "metadata": {"error": str(e), "error_type": "UnexpectedError"}
         }

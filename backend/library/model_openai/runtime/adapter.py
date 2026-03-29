@@ -55,14 +55,14 @@ def run(inputs: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
             temperature=temperature
         )
         
-        print(f"✅ [OpenAI Adapter] Received response successfully.")
+        print(f" [OpenAI Adapter] Received response successfully.")
         return {
             "success": True,
             "response": answer
         }
         
     except Exception as e:
-        print(f"❌ [OpenAI Adapter] API Error: {str(e)}")
+        print(f" [OpenAI Adapter] API Error: {str(e)}")
         return {
             "success": False,
             "response": f"OpenAI API Error: {str(e)}"
