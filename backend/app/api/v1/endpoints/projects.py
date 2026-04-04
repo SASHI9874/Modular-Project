@@ -225,7 +225,7 @@ async def download_with_progress(project_id: int, request: DownloadRequest):
     """
     # from app.services.packager.packager_service import PackagerService
     
-    download_id = str(uuid.uuid4())
+    download_id = str(project_id)
     
     async def event_generator():
         try:
