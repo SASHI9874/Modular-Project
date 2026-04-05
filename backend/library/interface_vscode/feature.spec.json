@@ -1,7 +1,7 @@
 {
     "key": "interface_vscode",
     "name": "VS Code",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "VS Code extension interface for coding agents",
     "min_platform_version": "0.1.1",
     "classification": {

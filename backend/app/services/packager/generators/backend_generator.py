@@ -290,6 +290,24 @@ if __name__ == "__main__":
 
                         output = output or "No response"
 
+                        # Send reasoning summary before streaming
+                        if results:
+                            tool_calls_made = []
+                            iterations_used = 0
+                            for node_id, result_data in results.items():
+                                if isinstance(result_data, dict):
+                                    if result_data.get("tool_calls_made"):
+                                        tool_calls_made = result_data["tool_calls_made"]
+                                    if result_data.get("iterations_used"):
+                                        iterations_used = result_data["iterations_used"]
+
+                            if tool_calls_made:
+                                await websocket.send_json({
+                                    "type": "agent_reasoning",
+                                    "tool_calls": tool_calls_made,
+                                    "iterations": iterations_used
+                                })
+
                         # Stream word by word
                         for word in output.split(" "):
                             await websocket.send_json({
