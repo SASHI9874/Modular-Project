@@ -450,13 +450,12 @@ class PackagerService:
     def __init__(self, graph_data: Dict[str, Any], project_name: str):
         self.graph = graph_data
         self.project_name = project_name
-        
         # Initialize modules
         self.analyzer = GraphAnalyzer(graph_data)
         self.validator = GraphValidator(graph_data)
         self.dependency_resolver = DependencyResolver()
         self.backend_gen = BackendGenerator(project_name)
-        self.frontend_gen = FrontendGenerator(project_name)
+        self.frontend_gen = FrontendGenerator(project_name, graph_data)
         self.extension_compiler = ExtensionCompiler(project_name)
         self.env_gen = EnvGenerator()
         self.docker_gen = DockerGenerator(project_name)
@@ -650,7 +649,11 @@ class PackagerService:
             
             # Step 5: Backend
             yield {"step": "backend", "progress": 45, "message": "Generating backend code..."}
-            backend_files = self.backend_gen.generate(resolved_keys)
+            # backend_files = self.backend_gen.generate(resolved_keys)
+            backend_files = self.backend_gen.generate(  resolved_keys,
+                                                        frontend_mode=frontend_mode,
+                                                        graph_data=self.graph
+                                                    )
             yield {"step": "backend", "progress": 55, "message": f" Generated {len(backend_files)} backend files"}
             
             # Step 6: Frontend
