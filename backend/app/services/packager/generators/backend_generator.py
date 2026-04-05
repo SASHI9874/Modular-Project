@@ -49,7 +49,7 @@ class BackendGenerator:
             print(f" [BackendGen] Error: {e}")
             raise CodeGenerationError(f"Backend generation failed: {e}")
 
-    # -------------------------------------------------------------------------
+
     # app.py generation
     # -------------------------------------------------------------------------
 
@@ -92,15 +92,18 @@ class BackendGenerator:
 
         return f'''import json
 import asyncio
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+import uvicorn
+from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import Any, Dict, Optional
-import uvicorn
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from executor import GraphExecutor
 from library_service import LibraryService
+
+load_dotenv()
 
 # Feature routers (health-check endpoints only)
 {imports_str}
@@ -386,7 +389,6 @@ if __name__ == "__main__":
             # headless, cli — POST /api/run only
             return base_run
 
-    # -------------------------------------------------------------------------
     # Requirements
     # -------------------------------------------------------------------------
 
@@ -401,6 +403,7 @@ if __name__ == "__main__":
             "python-multipart",
             "networkx",   # GraphExecutor uses this
             "pydantic",
+            "python-dotenv",
         }
 
         for key in feature_keys:
